@@ -17,6 +17,12 @@ from sqlalchemy import (
 
 
 @dataclass
+class Chat:
+    chat_id: int
+    title: str
+
+
+@dataclass
 class Game:
     game_id: int
     chat_id: int
@@ -24,6 +30,16 @@ class Game:
     players_count: int
     deck: List['Card']
     current_player_id: Union[int, None] = None
+
+
+class ChatModel(db):
+    __tablename__ = "chats"
+
+    chat_id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f'ChatModel(chat_id={self.chat_id!r}, title={self.title!r})'
 
 
 class GameModel(db):
@@ -38,4 +54,5 @@ class GameModel(db):
 
     def __repr__(self):
         return f'GameModel(game_id={self.game_id!r}, chat_id={self.chat_id!r}, state={self.state!r})'
+
 
