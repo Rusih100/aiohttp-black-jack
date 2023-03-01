@@ -23,6 +23,7 @@ class Chat:
 class Game:
     game_id: int
     chat_id: int
+    dealer_id = int
     state: str
     players_count: int
     deck: List["Card"]
@@ -36,6 +37,13 @@ class Player:
     user_id: int
     cash: int
     bet: int
+    hand: List['Card']
+
+
+@dataclass
+class Dealer:
+    dealer_id: int
+    game_id: int
     hand: List['Card']
 
 
@@ -54,6 +62,7 @@ class GameModel(db):
 
     game_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
+    dealer_id = Column(Integer, ForeignKey("dealers.dealer_id"), nullable=False)
     state = Column(String(length=250), nullable=False)
     players_count = Column(Integer, nullable=False)
     deck = Column(JSON)
@@ -69,11 +78,23 @@ class PlayerModel(db):
     player_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
-    cash = Column(Integer, nullable=False)
-    bet = Column(Integer, nullable=False)
+    cash = Column(Integer)
+    bet = Column(Integer)
     hand = Column(JSON)
 
     def __repr__(self):
         return f"PlayerModel(player_id={self.player_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
+
+
+class DealerModel(db):
+    __tablename__ = "dealers"
+
+    dealer_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
+    hand = Column(JSON)
+
+    def __repr__(self):
+        return f"DealerModel(dealer_id={self.dealer_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
+
 
 
