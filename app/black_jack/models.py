@@ -1,13 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Union
 
-from sqlalchemy import (
-    JSON,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-)
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.store.database.sqlalchemy_base import db
@@ -37,21 +31,29 @@ class Player:
     user_id: int
     cash: int
     bet: int
-    hand: List['Card']
+    hand: List["Card"]
 
 
 @dataclass
 class Dealer:
     dealer_id: int
     game_id: int
-    hand: List['Card']
+    hand: List["Card"]
+
+
+@dataclass
+class User:
+    user_id: int
+    vk_id: int
+    name: str
+    is_admin: bool
 
 
 class ChatModel(db):
     __tablename__ = "chats"
 
     chat_id = Column(Integer, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
+    title = Column(Text, nullable=False)
 
     def __repr__(self):
         return f"ChatModel(chat_id={self.chat_id!r}, title={self.title!r})"
@@ -60,7 +62,9 @@ class ChatModel(db):
 class GameModel(db):
     __tablename__ = "games"
 
-    game_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    game_id = Column(
+        Integer, primary_key=True, nullable=False, autoincrement=True
+    )
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
     dealer_id = Column(Integer, ForeignKey("dealers.dealer_id"), nullable=False)
     state = Column(String(length=250), nullable=False)
@@ -75,7 +79,9 @@ class GameModel(db):
 class PlayerModel(db):
     __tablename__ = "players"
 
-    player_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    player_id = Column(
+        Integer, primary_key=True, nullable=False, autoincrement=True
+    )
     game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     cash = Column(Integer)
@@ -89,7 +95,9 @@ class PlayerModel(db):
 class DealerModel(db):
     __tablename__ = "dealers"
 
-    dealer_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    dealer_id = Column(
+        Integer, primary_key=True, nullable=False, autoincrement=True
+    )
     game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
     hand = Column(JSON)
 
@@ -97,4 +105,18 @@ class DealerModel(db):
         return f"DealerModel(dealer_id={self.dealer_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
 
 
+class UserModel(db):
+    __tablename__ = "users"
 
+    user_id = Column(
+        Integer, primary_key=True, nullable=False, autoincrement=True
+    )
+    vk_id = Column(Integer, nullable=False)
+    name = Column(Text, nullable=False)
+    is_admin = Column(Boolean, nullable=False)
+
+    def __repr__(self):
+        return (
+            f"UserModel(user_id={self.user_id!r}, vk_id={self.vk_id!r}, "
+            f"name={self.name!r}, is_admin={self.is_admin!r})"
+        )
