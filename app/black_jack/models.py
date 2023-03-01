@@ -66,11 +66,10 @@ class GameModel(db):
         Integer, primary_key=True, nullable=False, autoincrement=True
     )
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
-    dealer_id = Column(Integer, ForeignKey("dealers.dealer_id"), nullable=False)
     state = Column(String(length=250), nullable=False)
     players_count = Column(Integer, nullable=False)
     deck = Column(JSON)
-    current_player_id = Column(Integer, ForeignKey("players.player_id"))
+    current_player_id = Column(Integer, ForeignKey("players.player_id", use_alter=True))
 
     def __repr__(self):
         return f"GameModel(game_id={self.game_id!r}, chat_id={self.chat_id!r}, state={self.state!r})"
