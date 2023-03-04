@@ -1,4 +1,6 @@
 import typing
+from dataclasses import dataclass
+from enum import Enum, StrEnum
 
 from app.store.bot.router import Router
 from app.store.vk_api.dataclasses import Message, Update
@@ -9,35 +11,37 @@ if typing.TYPE_CHECKING:
 router = Router()
 
 
-# FIXME: Тестовые хэндлеры
-# TODO: Написать нормальные хэндлеры
+@dataclass
+class Command:
+    command: str
+    description: str
 
 
-@router.message_handler(commands=["/start"])
-async def start_handler(update: "Update", app: "Application"):
-    await app.store.vk_api.send_message(
-        Message(
-            peer_id=update.object.message.peer_id,
-            text="Отработала команда старт",
-        )
+class BotCommands(Enum):
+    START = Command(
+        command="/start", description="Запускает бота и отправляет приветствие."
+    )
+    HELP = Command(
+        command="/help", description="Выдает список всех команд бота."
+    )
+    START_GAME = Command(
+        command="/start_game", description="Запускает игровую сессию."
+    )
+    STOP_GAME = Command(
+        command="/stop_game", description="Останавливает игровую сесиию."
     )
 
 
-@router.message_handler(func=lambda update: update.object.message.text == "123")
-async def func_handler(update: "Update", app: "Application"):
-    await app.store.vk_api.send_message(
-        Message(
-            peer_id=update.object.message.peer_id,
-            text="123",
-        )
-    )
+class ServiceSymbols(StrEnum):
+    LINE_BREAK = "%0A"  # Перенос строки
 
 
-@router.message_handler()
-async def other_message_handler(update: "Update", app: "Application"):
-    await app.store.vk_api.send_message(
-        Message(
-            peer_id=update.object.message.peer_id,
-            text="Моя твоя не понимать",
-        )
-    )
+@router.message_handler(commands=[BotCommands.HELP.value.command])
+async def help_command(update: "Update", app: "Application"):
+    message_text = f"Список команд бота: {ServiceSymbols.LINE_BREAK}"
+    for command in BotCommands:
+        message_text += f"{command.value.command} - {command.value.description} {ServiceSymbols.LINE_BREAK}"
+
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+
+    await app.store.vk_api.send_message(message=message)

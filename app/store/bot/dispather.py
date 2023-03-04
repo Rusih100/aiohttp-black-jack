@@ -1,5 +1,5 @@
 import typing
-from typing import List
+from typing import Awaitable, Callable, List
 
 from app.store.vk_api.dataclasses import Update
 
@@ -9,9 +9,14 @@ if typing.TYPE_CHECKING:
 
 
 class Handler:
-    def __init__(self, handler, command: List[str] = None, func=None):
-        self.handler = handler
-        self.commands: List[str] = command
+    def __init__(
+        self,
+        handler_func: Callable[["Update", "Application"], Awaitable[None]],
+        commands: List[str] | None = None,
+        func: Callable[["Update"], bool] | None = None,
+    ):
+        self.handler_func = handler_func
+        self.commands = commands
         self.func = func
 
     def can_process(self, update: Update) -> bool:
@@ -31,11 +36,11 @@ class Handler:
 class Dispatcher:
     def __init__(self, app: "Application", router: "Router"):
         self.app = app
-        self._message_handlers: List[Handler] = router.message_hundlers
+        self._message_handlers: List[Handler] = router.handlers
 
     async def process_updates(self, updates: list[Update]):
         for update in updates:
             for handler in self._message_handlers:
                 if handler.can_process(update):
-                    await handler.handler(update, self.app)
+                    await handler.handler_func(update, self.app)
                     break
