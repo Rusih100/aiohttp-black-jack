@@ -24,7 +24,7 @@ class Router:
             handler_func: Callable[["Update", "Application"], Awaitable[None]]
         ) -> Callable[["Update", "Application"], Awaitable[None]]:
             handler_object = Handler(
-                handler_func=handler_func, command=commands, func=func
+                handler_func=handler_func, commands=commands, func=func
             )
             self._message_handlers.append(handler_object)
             return handler_func
