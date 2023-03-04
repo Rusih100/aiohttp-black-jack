@@ -16,17 +16,19 @@ class Handler:
         func: Callable[["Update"], bool] | None = None,
     ):
         self.handler_func = handler_func
-        self.commands = commands
+        self.commands = commands if commands else []
         self.func = func
 
     def can_process(self, update: Update) -> bool:
         raw_command = update.object.message.text
 
-        if self.commands is not None and raw_command:
+        # Проверка на наличие команды в тексте
+        if self.commands:
             command = raw_command.strip()
             if command not in self.commands:
                 return False
 
+        # Проверка по условию в хэндлере
         if self.func is not None and not self.func(update):
             return False
 
