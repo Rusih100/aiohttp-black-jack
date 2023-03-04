@@ -1,16 +1,16 @@
-"""Create database for black_jack game
+"""Init database
 
-Revision ID: 80eccf545808
+Revision ID: d62473bfacd9
 Revises: 
-Create Date: 2023-03-01 21:48:27.496181
+Create Date: 2023-03-04 14:31:55.178380
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '80eccf545808'
+revision = 'd62473bfacd9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,32 +31,32 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('chat_id')
     )
     op.create_table('users',
-    sa.Column('user_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('vk_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('user_id')
     )
     op.create_table('games',
-    sa.Column('game_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('chat_id', sa.Integer(), nullable=False),
-    sa.Column('state', sa.String(length=250), nullable=False),
+    sa.Column('state', sa.Enum('START_GAME', name='gamestates'), nullable=False),
     sa.Column('players_count', sa.Integer(), nullable=False),
-    sa.Column('deck', sa.JSON(), nullable=True),
     sa.Column('current_player_id', sa.Integer(), nullable=True),
+    sa.Column('deck', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ),
     sa.ForeignKeyConstraint(['current_player_id'], ['players.player_id'], use_alter=True),
     sa.PrimaryKeyConstraint('game_id')
     )
     op.create_table('dealers',
-    sa.Column('dealer_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('dealer_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('hand', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ),
     sa.PrimaryKeyConstraint('dealer_id')
     )
     op.create_table('players',
-    sa.Column('player_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('player_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('cash', sa.Integer(), nullable=True),
