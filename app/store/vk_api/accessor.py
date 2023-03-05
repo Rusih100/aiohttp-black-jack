@@ -95,10 +95,7 @@ class VkApiAccessor(BaseAccessor):
         updates = []
 
         for raw_update in raw_updates:
-            print(raw_update)
             update = Update.parse_update(raw_update)
-            print(update)
-            print()
             if update:
                 updates.append(update)
 
