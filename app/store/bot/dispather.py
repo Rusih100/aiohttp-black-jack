@@ -27,21 +27,21 @@ class Handler:
         # Проверка на наличие команды в тексте
         if self.commands:
             command = raw_command.strip()
-            if command not in self.commands:
-                return False
+            if command in self.commands:
+                return True
 
         raw_payload = update.object.message.payload
 
         # Проверка на payload
         if self.buttons_payload and raw_payload is not None:
-            if raw_payload.button not in self.buttons_payload:
-                return False
+            if raw_payload.button in self.buttons_payload:
+                return True
 
         # Проверка по условию в хэндлере
-        if self.func is not None and not self.func(update):
-            return False
+        if self.func is not None and self.func(update):
+            return True
 
-        return True
+        return False
 
 
 class Dispatcher:
