@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class GameStates(Enum):
-    START_GAME = 1
+    START_GAME = auto()
 
     # TODO: Определить состояния игры

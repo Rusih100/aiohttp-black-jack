@@ -18,13 +18,11 @@ class Chat:
 class Game:
     game_id: int
     chat_id: int
-    dealer_id: int
     state: GameStates
     players_count: int
     deck: List["Card"]
     chat: "Chat"
     players: List["Player"]
-    dealer: "Dealer"
     current_player_id: int | None = None
 
 
@@ -37,13 +35,6 @@ class Player:
     bet: int
     hand: List["Card"]
     user: "User"
-
-
-@dataclass
-class Dealer:
-    dealer_id: int
-    game_id: int
-    hand: List["Card"]
 
 
 @dataclass
@@ -82,9 +73,6 @@ class GameModel(db):
     players: List["PlayerModel"] = relationship(
         "PlayerModel", back_populates="game"
     )
-    dealer: "DealerModel" = relationship(
-        "DealerModel", back_populates="game", uselist=False
-    )
 
     def __repr__(self):
         return f"GameModel(game_id={self.game_id!r}, chat_id={self.chat_id!r})"
@@ -105,19 +93,6 @@ class PlayerModel(db):
 
     def __repr__(self):
         return f"PlayerModel(player_id={self.player_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
-
-
-class DealerModel(db):
-    __tablename__ = "dealers"
-
-    dealer_id = Column(Integer, primary_key=True)
-    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
-    hand = Column(JSON)
-
-    game: "GameModel" = relationship("GameModel", back_populates="dealer")
-
-    def __repr__(self):
-        return f"DealerModel(dealer_id={self.dealer_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
 
 
 class UserModel(db):
