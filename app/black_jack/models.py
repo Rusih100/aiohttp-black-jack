@@ -70,8 +70,11 @@ class GameModel(db):
     deck = Column(JSON)
 
     chat: "ChatModel" = relationship("ChatModel", back_populates="games")
+    current_player: "PlayerModel" = relationship(
+        "PlayerModel", foreign_keys="current_player_id"
+    )
     players: List["PlayerModel"] = relationship(
-        "PlayerModel", back_populates="game"
+        "PlayerModel", back_populates="game",
     )
 
     def __repr__(self):
@@ -88,7 +91,7 @@ class PlayerModel(db):
     bet = Column(Integer)
     hand = Column(JSON)
 
-    game: "GameModel" = relationship("GameModel", back_populates="players")
+    game: "GameModel" = relationship("GameModel", back_populates="players", foreign_keys=["game_id"])
     user: "UserModel" = relationship("UserModel", back_populates="players")
 
     def __repr__(self):

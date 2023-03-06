@@ -13,6 +13,3 @@ if typing.TYPE_CHECKING:
 class GameAccessor(BaseAccessor):
     async def connect(self, app: "Application"):
         self.app = app
-
-
-
