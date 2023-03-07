@@ -11,7 +11,6 @@ from app.store.database.sqlalchemy_base import db
 @dataclass
 class Chat:
     chat_id: int
-    title: str
 
 
 @dataclass
@@ -49,7 +48,6 @@ class ChatModel(db):
     __tablename__ = "chats"
 
     chat_id = Column(Integer, primary_key=True)
-    title = Column(Text, nullable=False)
 
     games: List["GameModel"] = relationship("GameModel", back_populates="chat")
 
