@@ -104,7 +104,8 @@ class UserModel(db):
 
     user_id = Column(Integer, primary_key=True)
     vk_id = Column(Integer, nullable=False)
-    name = Column(Text, nullable=False)
+    first_name = Column(Text, nullable=False)
+    last_name = Column(Text, nullable=False)
     is_admin = Column(Boolean, nullable=False)
 
     players: List["PlayerModel"] = relationship(

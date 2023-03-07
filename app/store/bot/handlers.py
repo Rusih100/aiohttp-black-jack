@@ -45,7 +45,7 @@ async def start_command(update: "Update", app: "Application"):
     # TODO: Сделать по инвайту бота в чат
     # TODO: Получить список пользователей
 
-    await app.store.vk_api.get_conversation_members(update.object.message)
+    print(await app.store.vk_api.get_conversation_members(update.object.message))
 
     message_text = (
         f"Привет! Со мной можно сыграть в BlackJack {ServiceSymbols.LINE_BREAK}"
