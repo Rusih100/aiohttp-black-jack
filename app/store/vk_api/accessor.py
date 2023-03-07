@@ -118,3 +118,18 @@ class VkApiAccessor(BaseAccessor):
         async with self.session.get(query) as response:
             data = await response.json()
             self.logger.info(data)
+
+    async def get_conversations_by_id(self, message: Message):
+        query = self._build_query(
+            host=API_PATH,
+            method="messages.getConversationsById",
+            params={
+                "peer_ids": message.peer_id,
+                "group_id": self.app.config.bot.group_id,
+                "access_token": self.app.config.bot.token,
+            },
+        )
+        async with self.session.get(query) as response:
+            data = await response.json()
+            self.logger.info(data)
+
