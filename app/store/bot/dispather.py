@@ -38,8 +38,12 @@ class Handler:
                 return True
 
         # Проверка по условию в хэндлере
-        if self.func is not None and self.func(update):
-            return True
+        if self.func is not None:
+            try:
+                if self.func(update):
+                    return True
+            except AttributeError:
+                pass
 
         return False
 
