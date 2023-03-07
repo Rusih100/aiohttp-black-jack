@@ -1,12 +1,12 @@
 import random
 import typing
-from typing import Any, List, Optional, Dict
+from typing import Any, Dict, List, Optional
 
 from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
 
 from app.base.base_accessor import BaseAccessor
-from app.store.vk_api.dataclasses import Keyboard, Message, Update, Profile
+from app.store.vk_api.dataclasses import Keyboard, Message, Profile, Update
 from app.store.vk_api.poller import Poller
 
 if typing.TYPE_CHECKING:
@@ -119,7 +119,9 @@ class VkApiAccessor(BaseAccessor):
             data = await response.json()
             self.logger.info(data)
 
-    async def get_conversation_members(self, message: Message) -> List["Profile"]:
+    async def get_conversation_members(
+        self, message: Message
+    ) -> List["Profile"]:
         query = self._build_query(
             host=API_PATH,
             method="messages.getConversationMembers",
@@ -144,7 +146,7 @@ class VkApiAccessor(BaseAccessor):
                 profile_dict[_id] = Profile(
                     id=_id,
                     first_name=raw_profile["first_name"],
-                    last_name=raw_profile["last_name"]
+                    last_name=raw_profile["last_name"],
                 )
 
             for raw_item in raw_items:

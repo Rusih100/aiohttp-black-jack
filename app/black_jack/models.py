@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from app.store.bot.states import GameStates
 from app.store.database.sqlalchemy_base import db
@@ -63,17 +63,13 @@ class GameModel(db):
     state = Column(Enum(GameStates), nullable=False)
     players_count = Column(Integer, nullable=False)
     current_player_id = Column(
-        Integer, ForeignKey("players.player_id", use_alter=True)
+        Integer, ForeignKey("players.player_id")
     )
     deck = Column(JSON)
 
     chat: "ChatModel" = relationship("ChatModel", back_populates="games")
     current_player: "PlayerModel" = relationship(
-        "PlayerModel", foreign_keys="current_player_id"
-    )
-    players: List["PlayerModel"] = relationship(
-        "PlayerModel",
-        back_populates="game",
+        "PlayerModel", back_populates="game"
     )
 
     def __repr__(self):
@@ -91,7 +87,7 @@ class PlayerModel(db):
     hand = Column(JSON)
 
     game: "GameModel" = relationship(
-        "GameModel", back_populates="players", foreign_keys=["game_id"]
+        "GameModel", back_populates=["players", "current_player"]
     )
     user: "UserModel" = relationship("UserModel", back_populates="players")
 
