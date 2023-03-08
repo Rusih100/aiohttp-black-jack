@@ -15,13 +15,13 @@ class GameAccessor(BaseAccessor):
     async def connect(self, app: "Application"):
         self.app = app
 
-    # async def create_chat(self, chat_id) -> "Chat":
-    #     async with self.app.database.session() as session:
-    #         session: AsyncSession
-    #
-    #         new_chat = ChatModel(chat_id=chat_id)
-    #
-    #         session.add(new_chat)
-    #         await session.commit()
-    #
-    #     return Chat.from_sqlalchemy(new_chat)
+    async def create_chat(self, chat_id) -> "Chat":
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            new_chat = ChatModel(chat_id=chat_id)
+
+            session.add(new_chat)
+            await session.commit()
+
+        return Chat.from_sqlalchemy(new_chat)
