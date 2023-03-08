@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import relationship
@@ -14,9 +14,7 @@ class Chat:
 
     @classmethod
     def from_sqlalchemy(cls, model: "ChatModel"):
-        return cls(
-            chat_id=model.chat_id
-        )
+        return cls(chat_id=model.chat_id)
 
 
 @dataclass
@@ -34,8 +32,8 @@ class State:
     game_id: int
     state: GameStates
     deck: List["Card"]
-    current_player_id: int | None = None
-    current_player: "Player" | None = None
+    current_player_id: Optional[int] = None
+    current_player: Optional["Player"] = None
 
 
 @dataclass
