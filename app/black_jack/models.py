@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import relationship
 
 from app.store.bot.states import GameStates
 from app.store.database.sqlalchemy_base import db
@@ -11,6 +11,12 @@ from app.store.database.sqlalchemy_base import db
 @dataclass
 class Chat:
     chat_id: int
+
+    @classmethod
+    def from_sqlalchemy(cls, model: "ChatModel"):
+        return cls(
+            chat_id=model.chat_id
+        )
 
 
 @dataclass
@@ -69,7 +75,9 @@ class GameModel(db):
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
     players_count = Column(Integer, nullable=False)
 
-    state: "StateModel" = relationship("StateModel", back_populates="game", uselist=False)
+    state: "StateModel" = relationship(
+        "StateModel", back_populates="game", uselist=False
+    )
     chat: "ChatModel" = relationship("ChatModel", back_populates="games")
     players: "PlayerModel" = relationship("PlayerModel", back_populates="game")
 
@@ -84,16 +92,12 @@ class StateModel(db):
     game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
     state = Column(Enum(GameStates), nullable=False)
     deck = Column(JSON)
-    current_player_id = Column(
-        Integer, ForeignKey("players.player_id")
-    )
+    current_player_id = Column(Integer, ForeignKey("players.player_id"))
 
     current_player: "PlayerModel" = relationship(
         "PlayerModel", back_populates="state"
     )
-    game: "GameModel" = relationship(
-        "GameModel", back_populates="state"
-    )
+    game: "GameModel" = relationship("GameModel", back_populates="state")
 
 
 class PlayerModel(db):
@@ -106,9 +110,7 @@ class PlayerModel(db):
     bet = Column(Integer)
     hand = Column(JSON)
 
-    game: "GameModel" = relationship(
-        "GameModel", back_populates="players"
-    )
+    game: "GameModel" = relationship("GameModel", back_populates="players")
     user: "UserModel" = relationship("UserModel", back_populates="players")
 
     def __repr__(self):
