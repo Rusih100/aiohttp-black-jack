@@ -60,20 +60,33 @@ class GameModel(db):
 
     game_id = Column(Integer, primary_key=True)
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
-    state = Column(Enum(GameStates), nullable=False)
     players_count = Column(Integer, nullable=False)
-    current_player_id = Column(
-        Integer, ForeignKey("players.player_id")
-    )
-    deck = Column(JSON)
 
+    state: "StateModel" = relationship("StateModel", back_populates="game", uselist=False)
     chat: "ChatModel" = relationship("ChatModel", back_populates="games")
-    current_player: "PlayerModel" = relationship(
-        "PlayerModel", back_populates="game"
-    )
+    players: "PlayerModel" = relationship("PlayerModel", back_populates="game")
 
     def __repr__(self):
         return f"GameModel(game_id={self.game_id!r}, chat_id={self.chat_id!r})"
+
+
+class StateModel(db):
+    __tablename__ = "states"
+
+    state_id = Column(Integer, primary_key=True)
+    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
+    state = Column(Enum(GameStates), nullable=False)
+    deck = Column(JSON)
+    current_player_id = Column(
+        Integer, ForeignKey("players.player_id")
+    )
+
+    current_player: "PlayerModel" = relationship(
+        "PlayerModel", back_populates="state"
+    )
+    game: "GameModel" = relationship(
+        "GameModel", back_populates="state"
+    )
 
 
 class PlayerModel(db):
@@ -87,7 +100,7 @@ class PlayerModel(db):
     hand = Column(JSON)
 
     game: "GameModel" = relationship(
-        "GameModel", back_populates=["players", "current_player"]
+        "GameModel", back_populates="players"
     )
     user: "UserModel" = relationship("UserModel", back_populates="players")
 
