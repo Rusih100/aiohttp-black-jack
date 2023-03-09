@@ -13,8 +13,13 @@ class Chat:
     chat_id: int
 
     @classmethod
-    def from_sqlalchemy(cls, model: "ChatModel"):
+    def from_sqlalchemy(cls, model: "ChatModel") -> "Chat":
         return cls(chat_id=model.chat_id)
+
+
+@dataclass
+class Card:
+    pass
 
 
 @dataclass
@@ -25,6 +30,16 @@ class Game:
     chat: "Chat"
     players: List["Player"]
 
+    @classmethod
+    def from_sqlalchemy(cls, model: "GameModel") -> "Game":
+        return cls(
+            game_id=model.game_id,
+            chat_id=model.chat_id,
+            players_count=model.players_count,
+            chat=Chat.from_sqlalchemy(model.chat),
+            players=[Player.from_sqlalchemy(i) for i in model.players],
+        )
+
 
 @dataclass
 class State:
@@ -34,6 +49,17 @@ class State:
     deck: List["Card"]
     current_player_id: Optional[int] = None
     current_player: Optional["Player"] = None
+
+    @classmethod
+    def from_sqlalchemy(cls, model: "StateModel") -> "State":
+        return cls(
+            state_id=model.state_id,
+            game_id=model.state_id,
+            state=model.state,
+            deck=model.deck,  # TODO: Сделать преобразование карт из JSON
+            current_player_id=model.current_player_id,
+            current_player=Player.from_sqlalchemy(model.current_player),
+        )
 
 
 @dataclass
@@ -46,13 +72,36 @@ class Player:
     hand: List["Card"]
     user: "User"
 
+    @classmethod
+    def from_sqlalchemy(cls, model: "PlayerModel") -> "Player":
+        return cls(
+            player_id=model.player_id,
+            game_id=model.game_id,
+            user_id=model.user_id,
+            cash=model.cash,
+            bet=model.bet,
+            hand=model.hand,  # TODO: Сделать преобразование карт из JSON
+            user=model.user,
+        )
+
 
 @dataclass
 class User:
     user_id: int
     vk_id: int
-    name: str
+    first_name: str
+    last_name: str
     is_admin: bool
+
+    @classmethod
+    def from_sqlalchemy(cls, model: "UserModel") -> "User":
+        return cls(
+            user_id=model.user_id,
+            vk_id=model.vk_id,
+            first_name=model.first_name,
+            last_name=model.last_name,
+            is_admin=model.is_admin,
+        )
 
 
 class ChatModel(db):
@@ -70,14 +119,18 @@ class GameModel(db):
     __tablename__ = "games"
 
     game_id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
+    chat_id = Column(
+        Integer, ForeignKey("chats.chat_id"), nullable=False, index=True
+    )
     players_count = Column(Integer, nullable=False)
 
     state: "StateModel" = relationship(
         "StateModel", back_populates="game", uselist=False
     )
     chat: "ChatModel" = relationship("ChatModel", back_populates="games")
-    players: "PlayerModel" = relationship("PlayerModel", back_populates="game")
+    players: List["PlayerModel"] = relationship(
+        "PlayerModel", back_populates="game"
+    )
 
     def __repr__(self):
         return f"GameModel(game_id={self.game_id!r}, chat_id={self.chat_id!r})"

@@ -60,7 +60,6 @@ async def start_command(update: "Update", app: "Application"):
     message_text = (
         f"Привет! Со мной можно сыграть в BlackJack {ServiceSymbols.LINE_BREAK}"
     )
-
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
 
@@ -68,14 +67,12 @@ async def start_command(update: "Update", app: "Application"):
         f"Список команд - {BotCommands.HELP.value.command} {ServiceSymbols.LINE_BREAK}"
         f"Чтобы начать игру используй команду {BotCommands.START_GAME.value.command}"
     )
-
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
 
     message_text = (
         f"Для коректной работы бота нужно сделать бота администратором чата"
     )
-
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
 
@@ -94,14 +91,43 @@ async def help_command(update: "Update", app: "Application"):
 
 
 @router.handler(commands=[BotCommands.START_GAME.value.command])
+async def start_game(update: "Update", app: "Application"):
+    """
+    Создает игровую сессию, если она уже не создана
+    """
+    chat_id = update.object.message.peer_id
+
+    check_game = await app.store.game.get_game_by_chat_id(chat_id=chat_id)
+
+    if check_game is not None:
+        message_text = f"Игра уже идет"
+        message = Message(
+            peer_id=update.object.message.peer_id, text=message_text
+        )
+        await app.store.vk_api.send_message(message=message)
+        return
+
+    game = await app.store.game.create_game(chat_id=chat_id)
+
+
 async def invite_keyboard(update: "Update", app: "Application"):
     """
     Рассылает клавиатуру с опросом, будет ли пользователь играть
     """
 
-    print(
-        await app.store.vk_api.get_conversation_members(update.object.message)
+    members = await app.store.vk_api.get_conversation_members(
+        update.object.message
     )
+
+    if not members:
+        message_text = (
+            f"Для коректной работы бота нужно сделать бота администратором чата"
+        )
+        message = Message(
+            peer_id=update.object.message.peer_id, text=message_text
+        )
+        await app.store.vk_api.send_message(message=message)
+        return
 
     message = Message(
         peer_id=update.object.message.peer_id, text="Начинаем игру"

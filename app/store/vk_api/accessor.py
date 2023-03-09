@@ -132,8 +132,13 @@ class VkApiAccessor(BaseAccessor):
             },
         )
         async with self.session.get(query) as response:
-            data = (await response.json())["response"]
-            self.logger.info(data)
+            response = await response.json()
+            self.logger.info(response)
+
+            if response.get("error", False):
+                return []
+
+            data = response["response"]
 
             raw_items = data["items"]
             raw_profiles = data["profiles"]
