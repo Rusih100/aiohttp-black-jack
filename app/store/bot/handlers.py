@@ -36,10 +36,10 @@ class ServiceSymbols(StrEnum):
     LINE_BREAK = "%0A"  # Перенос строки
 
 
+# TODO: убрать хардкод, прокинув app в lambda
 @router.handler(
     func=lambda update: update.object.message.action.type == "chat_invite_user"
-    and update.object.message.action.member_id
-    == -218833701  # TODO: убрать хардкод, прокинув app в lambda
+    and update.object.message.action.member_id == -218833701
 )
 async def invite_bot(update: "Update", app: "Application"):
     """
@@ -55,7 +55,7 @@ async def start_command(update: "Update", app: "Application"):
     Добавляет чат в БД.
     """
 
-    # TODO: Добавить чат в БД
+    await app.store.game.create_chat(chat_id=update.object.message.peer_id)
 
     message_text = (
         f"Привет! Со мной можно сыграть в BlackJack {ServiceSymbols.LINE_BREAK}"
