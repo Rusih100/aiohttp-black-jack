@@ -6,7 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.base.base_accessor import BaseAccessor
-from app.black_jack.models import Chat, ChatModel, Game, GameModel
+from app.black_jack.models import (
+    Chat,
+    ChatModel,
+    Game,
+    GameModel,
+    State,
+    StateModel,
+)
+from app.store.bot.states import GameStates
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -70,9 +78,12 @@ class GameAccessor(BaseAccessor):
             session: AsyncSession
 
             result: ChunkedIteratorResult = await session.execute(
-                select(GameModel).where(GameModel.chat_id == chat_id)
+                select(GameModel)
+                .where(GameModel.chat_id == chat_id)
                 .options(
-                    joinedload("players"), joinedload("chat"), joinedload("state")
+                    joinedload("players"),
+                    joinedload("chat"),
+                    joinedload("state"),
                 )
             )
             game = result.scalar()
@@ -81,3 +92,24 @@ class GameAccessor(BaseAccessor):
             return None
 
         return Game.from_sqlalchemy(game)
+
+    async def create_state(self, game_id: int) -> State:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            new_state = StateModel(game_id=game_id, state=GameStates.START_GAME)
+
+            try:
+                session.add(new_state)
+                await session.commit()
+
+            except exc.IntegrityError:
+                await session.rollback()
+                return await self.get_state_by_game_id(game_id=game_id)
+
+        return State.from_sqlalchemy(new_state)
+
+    async def get_state_by_game_id(self, game_id) -> State | None:
+        pass
+
+        # TODO

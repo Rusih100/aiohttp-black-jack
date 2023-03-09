@@ -80,7 +80,7 @@ async def start_command(update: "Update", app: "Application"):
 @router.handler(commands=[BotCommands.HELP.value.command])
 async def help_command(update: "Update", app: "Application"):
     """
-    Отправляет список команд бота.
+    Отправляет список команд бота
     """
     message_text = f"Список команд бота: {ServiceSymbols.LINE_BREAK}"
     for command in BotCommands:
@@ -93,7 +93,8 @@ async def help_command(update: "Update", app: "Application"):
 @router.handler(commands=[BotCommands.START_GAME.value.command])
 async def start_game(update: "Update", app: "Application"):
     """
-    Создает игровую сессию, если она уже не создана
+    Создает игровую сессию, если она уже не создана.
+    Спрашивает сколько игроков будет играть
     """
     chat_id = update.object.message.peer_id
 
@@ -108,6 +109,15 @@ async def start_game(update: "Update", app: "Application"):
         return
 
     game = await app.store.game.create_game(chat_id=chat_id)
+
+    # TODO: Добавление стейта в БД и меседж
+
+
+async def stop_game(update: "Update", app: "Application"):
+    """
+    Останавливает игровую сессию
+    """
+    pass
 
 
 async def invite_keyboard(update: "Update", app: "Application"):
@@ -136,7 +146,7 @@ async def invite_keyboard(update: "Update", app: "Application"):
 
     # TODO: Доделать рассылку для всех игроков
     keyboard = Keyboard(
-        one_time=True,
+        one_time=False,
         inline=False,
         buttons=[
             [
