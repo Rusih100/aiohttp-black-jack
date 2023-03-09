@@ -37,7 +37,9 @@ class Game:
             chat_id=model.chat_id,
             players_count=model.players_count,
             chat=Chat.from_sqlalchemy(model.chat),
-            players=[Player.from_sqlalchemy(i) for i in model.players],
+            players=[
+                Player.from_sqlalchemy(player) for player in model.players
+            ],
         )
 
 
@@ -45,7 +47,7 @@ class Game:
 class State:
     state_id: int
     game_id: int
-    state: GameStates
+    type: GameStates
     deck: List["Card"]
     current_player_id: Optional[int] = None
     current_player: Optional["Player"] = None
@@ -55,7 +57,7 @@ class State:
         return cls(
             state_id=model.state_id,
             game_id=model.state_id,
-            state=model.state,
+            type=model.type,
             deck=model.deck,  # TODO: Сделать преобразование карт из JSON
             current_player_id=model.current_player_id,
             current_player=Player.from_sqlalchemy(model.current_player),
@@ -141,7 +143,7 @@ class StateModel(db):
 
     state_id = Column(Integer, primary_key=True)
     game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
-    state = Column(Enum(GameStates), nullable=False)
+    type = Column(Enum(GameStates), nullable=False)
     deck = Column(JSON)
     current_player_id = Column(Integer, ForeignKey("players.player_id"))
 

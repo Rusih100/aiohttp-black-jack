@@ -110,6 +110,19 @@ class GameAccessor(BaseAccessor):
         return State.from_sqlalchemy(new_state)
 
     async def get_state_by_game_id(self, game_id) -> State | None:
-        pass
-
         # TODO
+
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(StateModel)
+                .where(StateModel.game_id == game_id)
+                .options(joinedload("current_player"), joinedload("game"))
+            )
+            state = result.scalar()
+
+        if state is None:
+            return None
+
+        return State.from_sqlalchemy(state)
