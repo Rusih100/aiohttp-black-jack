@@ -142,7 +142,7 @@ class StateModel(db):
     __tablename__ = "states"
 
     state_id = Column(Integer, primary_key=True)
-    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
+    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False, index=True)
     type = Column(Enum(GameStates), nullable=False)
     deck = Column(JSON)
     current_player_id = Column(Integer, ForeignKey("players.player_id"))
