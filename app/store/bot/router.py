@@ -9,8 +9,12 @@ if typing.TYPE_CHECKING:
 
 
 class Router:
-    def __init__(self):
+    def __init__(self, *args: "Router"):
         self._message_handlers: List[Handler] = []
+
+        if args:
+            for router in args:
+                self._message_handlers += router.handlers
 
     def handler(
         self,
