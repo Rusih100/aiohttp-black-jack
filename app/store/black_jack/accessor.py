@@ -1,7 +1,7 @@
 import typing
 from typing import List
 
-from sqlalchemy import exc, select, update
+from sqlalchemy import exc, select, update, delete
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -80,6 +80,15 @@ class GameAccessor(BaseAccessor):
                 session.add_all(new_users)
 
         return await self.get_game_by_chat_id(chat_id=chat_id)
+
+    async def close_game(self, chat_id: int):
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                await session.execute(
+                    delete(GameModel)
+                    .where(GameModel.chat_id == chat_id)
+                )
 
     async def get_game_by_chat_id(self, chat_id: int) -> Game | None:
         async with self.app.database.session() as session:
