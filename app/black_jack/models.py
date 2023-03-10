@@ -128,7 +128,10 @@ class GameModel(db):
 
     game_id = Column(Integer, primary_key=True)
     chat_id = Column(
-        Integer, ForeignKey("chats.chat_id"), nullable=False, index=True
+        Integer,
+        ForeignKey("chats.chat_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     players_count = Column(Integer, nullable=False)
 
@@ -151,7 +154,10 @@ class StateModel(db):
 
     state_id = Column(Integer, primary_key=True)
     game_id = Column(
-        Integer, ForeignKey("games.game_id"), nullable=False, index=True
+        Integer,
+        ForeignKey("games.game_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     type = Column(Enum(GameStates), nullable=False)
     deck = Column(JSON)
@@ -167,7 +173,9 @@ class PlayerModel(db):
     __tablename__ = "players"
 
     player_id = Column(Integer, primary_key=True)
-    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False)
+    game_id = Column(
+        Integer, ForeignKey("games.game_id", ondelete="CASCADE"), nullable=False
+    )
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     cash = Column(Integer)
     bet = Column(Integer)

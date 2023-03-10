@@ -1,8 +1,8 @@
 """Init database
 
-Revision ID: 3b18dc97e631
+Revision ID: 8bb3c1f4e82d
 Revises: 
-Create Date: 2023-03-10 22:32:12.655945
+Create Date: 2023-03-11 01:29:10.116598
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '3b18dc97e631'
+revision = '8bb3c1f4e82d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,7 +41,7 @@ def upgrade() -> None:
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('chat_id', sa.Integer(), nullable=False),
     sa.Column('players_count', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ),
+    sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('game_id')
     )
     op.create_index(op.f('ix_games_chat_id'), 'games', ['chat_id'], unique=False)
@@ -52,7 +52,7 @@ def upgrade() -> None:
     sa.Column('cash', sa.Integer(), nullable=True),
     sa.Column('bet', sa.Integer(), nullable=True),
     sa.Column('hand', sa.JSON(), nullable=True),
-    sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ),
+    sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('player_id')
     )
@@ -63,7 +63,7 @@ def upgrade() -> None:
     sa.Column('deck', sa.JSON(), nullable=True),
     sa.Column('current_player_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['current_player_id'], ['players.player_id'], ),
-    sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ),
+    sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('state_id')
     )
     op.create_index(op.f('ix_states_game_id'), 'states', ['game_id'], unique=False)

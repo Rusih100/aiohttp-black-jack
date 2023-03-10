@@ -56,7 +56,9 @@ class GameAccessor(BaseAccessor):
 
         return Chat.from_sqlalchemy(chat)
 
-    async def init_game(self, chat_id: int, profiles: List[Profile]) -> Game | None:
+    async def init_game(
+        self, chat_id: int, profiles: List[Profile]
+    ) -> Game | None:
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():
