@@ -32,11 +32,11 @@ async def start_game(update: "Update", app: "Application"):
         return
 
     # Получаем список участников чата
-    members = await app.store.vk_api.get_conversation_members(
+    profiles = await app.store.vk_api.get_conversation_members(
         update.object.message
     )
 
-    if not members:
+    if not profiles:
         message_text = (
             f"Для коректной работы бота нужно сделать бота администратором чата"
         )
@@ -47,12 +47,7 @@ async def start_game(update: "Update", app: "Application"):
         return
 
     # Если игра не идет, создаем новую
-    game = await app.store.game.create_game(chat_id=chat_id)
-
-    # Получаем список игроков и добавляем в БД
-
-    # Создаем сущность стейта
-    await app.store.game.create_state(game_id=game.game_id)
+    await app.store.game.init_game(chat_id=chat_id, profiles=profiles)
 
     # Выдаем приглашение
     message_text = f"Сколько человек будет играть?"

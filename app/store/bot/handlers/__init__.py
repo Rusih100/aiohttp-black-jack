@@ -6,7 +6,6 @@ from app.store.bot.handlers import (
 )
 from app.store.bot.router import Router
 
-
 router = Router(
     help_command.router,
     start_command.router,

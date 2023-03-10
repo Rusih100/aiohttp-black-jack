@@ -29,6 +29,7 @@ class Game:
     players_count: int
     chat: "Chat"
     players: List["Player"]
+    state: Optional["State"]
 
     @classmethod
     def from_sqlalchemy(cls, model: "GameModel") -> "Game":
@@ -40,6 +41,7 @@ class Game:
             players=[
                 Player.from_sqlalchemy(player) for player in model.players
             ],
+            state=State.from_sqlalchemy(model.state) if model.state else None,
         )
 
 
@@ -60,7 +62,7 @@ class State:
             type=model.type,
             deck=model.deck,  # TODO: Сделать преобразование карт из JSON
             current_player_id=model.current_player_id
-            if model.current_player
+            if model.current_player_id
             else None,
             current_player=Player.from_sqlalchemy(model.current_player)
             if model.current_player
@@ -131,11 +133,13 @@ class GameModel(db):
     players_count = Column(Integer, nullable=False)
 
     state: "StateModel" = relationship(
-        "StateModel", back_populates="game", uselist=False
+        "StateModel", back_populates="game", uselist=False, lazy="joined"
     )
-    chat: "ChatModel" = relationship("ChatModel", back_populates="games")
+    chat: "ChatModel" = relationship(
+        "ChatModel", back_populates="games", lazy="joined"
+    )
     players: List["PlayerModel"] = relationship(
-        "PlayerModel", back_populates="game"
+        "PlayerModel", back_populates="game", lazy="joined"
     )
 
     def __repr__(self):
@@ -154,7 +158,7 @@ class StateModel(db):
     current_player_id = Column(Integer, ForeignKey("players.player_id"))
 
     current_player: "PlayerModel" = relationship(
-        "PlayerModel", back_populates="state"
+        "PlayerModel", back_populates="state", lazy="joined"
     )
     game: "GameModel" = relationship("GameModel", back_populates="state")
 
@@ -173,7 +177,9 @@ class PlayerModel(db):
     state: "StateModel" = relationship(
         "StateModel", back_populates="current_player"
     )
-    user: "UserModel" = relationship("UserModel", back_populates="players")
+    user: "UserModel" = relationship(
+        "UserModel", back_populates="players", lazy="joined"
+    )
 
     def __repr__(self):
         return f"PlayerModel(player_id={self.player_id!r}, game_id={self.game_id!r}, hand={self.hand!r})"
