@@ -2,6 +2,7 @@ import typing
 
 from app.store.bot.commands import BotCommands
 from app.store.bot.router import Router
+from app.store.bot.states import GameStates
 from app.store.vk_api.dataclasses import Button, Keyboard, Message, Update
 
 if typing.TYPE_CHECKING:
@@ -53,6 +54,28 @@ async def start_game(update: "Update", app: "Application"):
     message_text = f"Сколько человек будет играть?"
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
+
+
+def _validate_int(update: Update) -> bool:
+    text = update.object.message.text
+    try:
+        num = int(text)
+    except ValueError:
+        return False
+    except TypeError:
+        return False
+    if num <= 0:
+        return False
+    return True
+
+
+# В хэдлер прилетят все сообщения содержащие только целые числа, далее проверим стейт
+@router.handler(func=_validate_int)
+async def waiting_number_of_players(update: "Update", app: "Application"):
+    """
+    Ожидает количество игроков для игры, как только получает, меняет стейт и вызывает следующий хэндлер
+    """
+    pass  # TODO
 
 
 async def invite_keyboard(update: "Update", app: "Application"):

@@ -1,8 +1,8 @@
 import typing
 from typing import List
 
+from sqlalchemy import delete, exc, select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import exc, select, update, delete
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -73,15 +73,13 @@ class GameAccessor(BaseAccessor):
                         "vk_id": profile.id,
                         "first_name": profile.first_name,
                         "last_name": profile.last_name,
-                        "is_admin": profile.is_admin
+                        "is_admin": profile.is_admin,
                     }
                     for profile in profiles
                 ]
                 session.add(new_game)
                 await session.execute(
-                    insert(UserModel)
-                    .values(new_users)
-                    .on_conflict_do_nothing()
+                    insert(UserModel).values(new_users).on_conflict_do_nothing()
                 )
 
         return await self.get_game_by_chat_id(chat_id=chat_id)
@@ -91,8 +89,7 @@ class GameAccessor(BaseAccessor):
             session: AsyncSession
             async with session.begin():
                 await session.execute(
-                    delete(GameModel)
-                    .where(GameModel.chat_id == chat_id)
+                    delete(GameModel).where(GameModel.chat_id == chat_id)
                 )
 
     async def get_game_by_chat_id(self, chat_id: int) -> Game | None:
