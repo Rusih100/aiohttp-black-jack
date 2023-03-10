@@ -17,8 +17,8 @@ class Handler:
         func: Callable[["Update"], bool] | None = None,
     ):
         self.handler_func = handler_func
-        self.commands = commands or []
-        self.buttons_payload = buttons_payload or []
+        self.commands = commands if commands else []
+        self.buttons_payload = buttons_payload if buttons_payload else []
         self.func = func
 
     def can_process(self, update: Update) -> bool:

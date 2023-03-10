@@ -59,8 +59,12 @@ class State:
             game_id=model.state_id,
             type=model.type,
             deck=model.deck,  # TODO: Сделать преобразование карт из JSON
-            current_player_id=model.current_player_id,
-            current_player=Player.from_sqlalchemy(model.current_player),
+            current_player_id=model.current_player_id
+            if model.current_player
+            else None,
+            current_player=Player.from_sqlalchemy(model.current_player)
+            if model.current_player
+            else None,
         )
 
 
@@ -142,7 +146,9 @@ class StateModel(db):
     __tablename__ = "states"
 
     state_id = Column(Integer, primary_key=True)
-    game_id = Column(Integer, ForeignKey("games.game_id"), nullable=False, index=True)
+    game_id = Column(
+        Integer, ForeignKey("games.game_id"), nullable=False, index=True
+    )
     type = Column(Enum(GameStates), nullable=False)
     deck = Column(JSON)
     current_player_id = Column(Integer, ForeignKey("players.player_id"))

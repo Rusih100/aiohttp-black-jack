@@ -1,6 +1,6 @@
 import typing
 
-from sqlalchemy import exc, select
+from sqlalchemy import exc, select, update
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -36,9 +36,8 @@ class GameAccessor(BaseAccessor):
 
             except exc.IntegrityError:
                 await session.rollback()
-                return await self.get_chat_by_id(chat_id=chat_id)
 
-        return Chat.from_sqlalchemy(new_chat)
+        return await self.get_chat_by_id(chat_id=chat_id)
 
     async def get_chat_by_id(self, chat_id: int) -> Chat | None:
         async with self.app.database.session() as session:
@@ -54,13 +53,13 @@ class GameAccessor(BaseAccessor):
 
         return Chat.from_sqlalchemy(chat)
 
-    async def create_game(self, chat_id: int) -> Game:
+    async def create_game(self, chat_id: int, players_count: int) -> Game:
         async with self.app.database.session() as session:
             session: AsyncSession
 
             new_game = GameModel(
                 chat_id=chat_id,
-                players_count=0,
+                players_count=players_count,
             )
 
             try:
@@ -69,9 +68,8 @@ class GameAccessor(BaseAccessor):
 
             except exc.IntegrityError:
                 await session.rollback()
-                return await self.get_game_by_chat_id(chat_id=chat_id)
 
-        return Game.from_sqlalchemy(new_game)
+        return await self.get_game_by_chat_id(chat_id=chat_id)
 
     async def get_game_by_chat_id(self, chat_id: int) -> Game | None:
         async with self.app.database.session() as session:
@@ -97,7 +95,9 @@ class GameAccessor(BaseAccessor):
         async with self.app.database.session() as session:
             session: AsyncSession
 
-            new_state = StateModel(game_id=game_id, type=GameStates.START_GAME)
+            new_state = StateModel(
+                game_id=game_id, type=GameStates.WAITING_NUMBER_OF_PLAYERS
+            )
 
             try:
                 session.add(new_state)
@@ -105,13 +105,10 @@ class GameAccessor(BaseAccessor):
 
             except exc.IntegrityError:
                 await session.rollback()
-                return await self.get_state_by_game_id(game_id=game_id)
 
-        return State.from_sqlalchemy(new_state)
+        return await self.get_state_by_game_id(game_id=game_id)
 
-    async def get_state_by_game_id(self, game_id) -> State | None:
-        # TODO
-
+    async def get_state_by_game_id(self, game_id: int) -> State | None:
         async with self.app.database.session() as session:
             session: AsyncSession
 
@@ -126,3 +123,18 @@ class GameAccessor(BaseAccessor):
             return None
 
         return State.from_sqlalchemy(state)
+
+    async def update_state_type(
+        self, game_id: int, state_type: GameStates
+    ) -> State:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            await session.execute(
+                update(StateModel)
+                .where(StateModel.game_id == game_id)
+                .values(type=state_type)
+            )
+            await session.commit()  # TODO: Отловить исключение
+
+        return await self.get_state_by_game_id(game_id=game_id)

@@ -10,6 +10,8 @@ if typing.TYPE_CHECKING:
 
 router = Router()
 
+# TODO: Придумать как декомпозировать код
+
 
 @dataclass
 class Command:
@@ -54,7 +56,7 @@ async def start_command(update: "Update", app: "Application"):
     Отправляет приветствие.
     Добавляет чат в БД.
     """
-
+    # Создаем чат в БД
     await app.store.game.create_chat(chat_id=update.object.message.peer_id)
 
     message_text = (
@@ -98,8 +100,10 @@ async def start_game(update: "Update", app: "Application"):
     """
     chat_id = update.object.message.peer_id
 
+    # Проверяем идет ли игра
     check_game = await app.store.game.get_game_by_chat_id(chat_id=chat_id)
 
+    # Если игра уже идет, выходим
     if check_game is not None:
         message_text = f"Игра уже идет"
         message = Message(
@@ -108,23 +112,7 @@ async def start_game(update: "Update", app: "Application"):
         await app.store.vk_api.send_message(message=message)
         return
 
-    game = await app.store.game.create_game(chat_id=chat_id)
-
-    # TODO: Добавление стейта в БД и меседж
-
-
-async def stop_game(update: "Update", app: "Application"):
-    """
-    Останавливает игровую сессию
-    """
-    pass
-
-
-async def invite_keyboard(update: "Update", app: "Application"):
-    """
-    Рассылает клавиатуру с опросом, будет ли пользователь играть
-    """
-
+    # Получаем список участников чата
     members = await app.store.vk_api.get_conversation_members(
         update.object.message
     )
@@ -138,6 +126,34 @@ async def invite_keyboard(update: "Update", app: "Application"):
         )
         await app.store.vk_api.send_message(message=message)
         return
+
+    # Если игра не идет, создаем новую
+    game = await app.store.game.create_game(chat_id=chat_id)
+
+    # Получаем список игроков и добавляем в БД
+
+    # Создаем сущность стейта
+    await app.store.game.create_state(game_id=game.game_id)
+
+    # Выдаем приглашение
+    message_text = f"Сколько человек будет играть?"
+    message = Message(
+        peer_id=update.object.message.peer_id, text=message_text
+    )
+    await app.store.vk_api.send_message(message=message)
+
+
+async def stop_game(update: "Update", app: "Application"):
+    """
+    Останавливает игровую сессию
+    """
+    pass  # TODO: Сделать удаление записи БД из игры
+
+
+async def invite_keyboard(update: "Update", app: "Application"):
+    """
+    Рассылает клавиатуру с опросом, будет ли пользователь играть
+    """
 
     message = Message(
         peer_id=update.object.message.peer_id, text="Начинаем игру"
@@ -166,7 +182,6 @@ async def invite_keyboard_yes(update: "Update", app: "Application"):
     """
     Действие, если пользователь согласился играть
     """
-
     # TODO: Логика добавления игрока
 
     message = Message(peer_id=update.object.message.peer_id, text=f"Отлично")
