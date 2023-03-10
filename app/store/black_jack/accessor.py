@@ -1,6 +1,7 @@
 import typing
 from typing import List
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import exc, select, update, delete
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,16 +69,20 @@ class GameAccessor(BaseAccessor):
                     state=StateModel(type=GameStates.WAITING_NUMBER_OF_PLAYERS),
                 )
                 new_users = [
-                    UserModel(
-                        vk_id=profile.id,
-                        first_name=profile.first_name,
-                        last_name=profile.last_name,
-                        is_admin=profile.is_admin,
-                    )
+                    {
+                        "vk_id": profile.id,
+                        "first_name": profile.first_name,
+                        "last_name": profile.last_name,
+                        "is_admin": profile.is_admin
+                    }
                     for profile in profiles
                 ]
                 session.add(new_game)
-                session.add_all(new_users)
+                await session.execute(
+                    insert(UserModel)
+                    .values(new_users)
+                    .on_conflict_do_nothing()
+                )
 
         return await self.get_game_by_chat_id(chat_id=chat_id)
 

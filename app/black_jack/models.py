@@ -197,7 +197,7 @@ class UserModel(db):
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True)
-    vk_id = Column(Integer, nullable=False)
+    vk_id = Column(Integer, nullable=False, unique=True)
     first_name = Column(Text, nullable=False)
     last_name = Column(Text, nullable=False)
     is_admin = Column(Boolean, nullable=False)
@@ -209,5 +209,5 @@ class UserModel(db):
     def __repr__(self):
         return (
             f"UserModel(user_id={self.user_id!r}, vk_id={self.vk_id!r}, "
-            f"name={self.name!r}, is_admin={self.is_admin!r})"
+            f"first_name={self.first_name!r}, last_name={self.last_name!r}, is_admin={self.is_admin!r})"
         )

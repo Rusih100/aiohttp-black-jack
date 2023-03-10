@@ -1,16 +1,16 @@
 """Init database
 
-Revision ID: 8bb3c1f4e82d
+Revision ID: 32ffe75732ca
 Revises: 
-Create Date: 2023-03-11 01:29:10.116598
+Create Date: 2023-03-11 02:03:11.236190
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '8bb3c1f4e82d'
+revision = '32ffe75732ca'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,7 +35,8 @@ def upgrade() -> None:
     sa.Column('first_name', sa.Text(), nullable=False),
     sa.Column('last_name', sa.Text(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), nullable=False),
-    sa.PrimaryKeyConstraint('user_id')
+    sa.PrimaryKeyConstraint('user_id'),
+    sa.UniqueConstraint('vk_id')
     )
     op.create_table('games',
     sa.Column('game_id', sa.Integer(), nullable=False),
