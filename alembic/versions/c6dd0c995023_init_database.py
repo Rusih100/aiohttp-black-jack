@@ -1,16 +1,16 @@
 """Init database
 
-Revision ID: 32ffe75732ca
+Revision ID: c6dd0c995023
 Revises: 
-Create Date: 2023-03-11 02:03:11.236190
+Create Date: 2023-03-11 11:21:15.445512
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '32ffe75732ca'
+revision = 'c6dd0c995023'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -60,7 +60,7 @@ def upgrade() -> None:
     op.create_table('states',
     sa.Column('state_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', name='gamestates'), nullable=False),
+    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', 'INVITING_PLAYERS', name='gamestates'), nullable=False),
     sa.Column('deck', sa.JSON(), nullable=True),
     sa.Column('current_player_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['current_player_id'], ['players.player_id'], ),

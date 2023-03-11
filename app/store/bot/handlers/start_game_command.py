@@ -4,6 +4,7 @@ from app.store.bot.commands import BotCommands
 from app.store.bot.router import Router
 from app.store.bot.states import GameStates
 from app.store.vk_api.dataclasses import Button, Keyboard, Message, Update
+from app.store.bot.handlers.utils import ServiceSymbols
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -34,7 +35,7 @@ async def start_game(update: "Update", app: "Application"):
 
     # Получаем список участников чата
     profiles = await app.store.vk_api.get_conversation_members(
-        update.object.message
+        message=update.object.message
     )
 
     if not profiles:
@@ -73,10 +74,47 @@ async def waiting_number_of_players(update: "Update", app: "Application"):
     """
     Ожидает количество игроков для игры, как только получает, меняет стейт и вызывает следующий хэндлер
     """
-    pass  # TODO
+    game = await app.store.game.get_game_by_chat_id(
+        chat_id=update.object.message.peer_id
+    )
+
+    if game.state.type != GameStates.WAITING_NUMBER_OF_PLAYERS:
+        return
+
+    number_of_players = int(update.object.message.text)
+
+    # Получаем список участников чата
+    profiles = await app.store.vk_api.get_conversation_members(
+        message=update.object.message
+    )
+
+    if len(profiles) < number_of_players:
+        message_text = f"Введенное количество игроков больше чем участников чата. {ServiceSymbols.LINE_BREAK}" \
+                       f"Повторите ввод"
+        message = Message(peer_id=update.object.message.peer_id, text=message_text)
+        await app.store.vk_api.send_message(message=message)
+        return
+
+    # Обновляем количество игроков
+    await app.store.game.update_players_count(
+        game_id=game.game_id,
+        players_count=number_of_players
+    )
+
+    # Обновляем стейт
+    await app.store.game.update_state_type(
+        game_id=game.game_id,
+        state_type=GameStates.INVITING_PLAYERS
+    )
+
+    message_text = f"Принял"
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    await app.store.vk_api.send_message(message=message)
+
+    return await inviting_players(update, app)
 
 
-async def invite_keyboard(update: "Update", app: "Application"):
+async def inviting_players(update: "Update", app: "Application"):
     """
     Рассылает клавиатуру с опросом, будет ли пользователь играть
     """
@@ -104,7 +142,7 @@ async def invite_keyboard(update: "Update", app: "Application"):
 
 
 @router.handler(buttons_payload=["invite_keyboard_yes"])
-async def invite_keyboard_yes(update: "Update", app: "Application"):
+async def inviting_players_yes(update: "Update", app: "Application"):
     """
     Действие, если пользователь согласился играть
     """
@@ -115,7 +153,7 @@ async def invite_keyboard_yes(update: "Update", app: "Application"):
 
 
 @router.handler(buttons_payload=["invite_keyboard_no"])
-async def invite_keyboard_no(update: "Update", app: "Application"):
+async def inviting_players_no(update: "Update", app: "Application"):
     """
     Действие, если пользователь отказался играть
     """

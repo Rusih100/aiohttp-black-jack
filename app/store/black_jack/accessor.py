@@ -15,6 +15,7 @@ from app.black_jack.models import (
     GameModel,
     State,
     StateModel,
+    User,
     UserModel,
 )
 from app.store.bot.states import GameStates
@@ -106,6 +107,20 @@ class GameAccessor(BaseAccessor):
 
         return Game.from_sqlalchemy(game)
 
+    async def get_game_by_game_id(self, game_id: int) -> Game | None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(GameModel).where(GameModel.game_id == game_id)
+            )
+            game = result.scalar()
+
+        if game is None:
+            return None
+
+        return Game.from_sqlalchemy(game)
+
     async def get_state_by_game_id(self, game_id: int) -> State | None:
         async with self.app.database.session() as session:
             session: AsyncSession
@@ -136,3 +151,16 @@ class GameAccessor(BaseAccessor):
             await session.commit()  # TODO: Отловить исключение
 
         return await self.get_state_by_game_id(game_id=game_id)
+
+    async def update_players_count(self, game_id: int, players_count: int) -> Game:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            await session.execute(
+                update(GameModel)
+                .where(GameModel.game_id == game_id)
+                .values(players_count=players_count)
+            )
+            await session.commit()
+
+        return await self.get_game_by_game_id(game_id=game_id)
