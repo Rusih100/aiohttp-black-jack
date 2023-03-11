@@ -60,9 +60,7 @@ def _validate_int(update: Update) -> bool:
     text = update.object.message.text
     try:
         num = int(text)
-    except ValueError:
-        return False
-    except TypeError:
+    except (ValueError, TypeError):
         return False
     if num <= 0:
         return False
