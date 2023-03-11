@@ -47,7 +47,7 @@ async def start_command(update: "Update", app: "Application"):
     await app.store.vk_api.send_message(message=message)
 
     message_text = (
-        f"Для коректной работы бота нужно сделать бота администратором чата"
+        "Для коректной работы бота нужно сделать бота администратором чата"
     )
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)

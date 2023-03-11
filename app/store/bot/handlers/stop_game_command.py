@@ -16,9 +16,12 @@ async def stop_game(update: "Update", app: "Application"):
     """
     Выводит результаты и останавливает игровую сессию
     """
+    # TODO: Игру может отстановить только участник игры
+
     # TODO: Вывод результов игры
     await app.store.game.close_game(chat_id=update.object.message.peer_id)
 
-    message_text = "Игра остановлена"
-    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    message = Message(
+        peer_id=update.object.message.peer_id, text="Игра остановлена"
+    )
     await app.store.vk_api.send_message(message=message)

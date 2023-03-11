@@ -13,6 +13,8 @@ from app.black_jack.models import (
     ChatModel,
     Game,
     GameModel,
+    Player,
+    PlayerModel,
     State,
     StateModel,
     User,
@@ -67,6 +69,7 @@ class GameAccessor(BaseAccessor):
                 new_game = GameModel(
                     chat_id=chat_id,
                     players_count=0,
+                    join_players_count=0,
                     state=StateModel(type=GameStates.WAITING_NUMBER_OF_PLAYERS),
                 )
                 new_users = [
@@ -148,11 +151,27 @@ class GameAccessor(BaseAccessor):
                 .where(StateModel.game_id == game_id)
                 .values(type=state_type)
             )
-            await session.commit()  # TODO: Отловить исключение
+            await session.commit()
 
         return await self.get_state_by_game_id(game_id=game_id)
 
-    async def update_players_count(self, game_id: int, players_count: int) -> Game:
+    async def get_user_by_vk_id(self, vk_id: int) -> User | None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(UserModel).where(UserModel.vk_id == vk_id)
+            )
+            user = result.scalar()
+
+        if user is None:
+            return None
+
+        return User.from_sqlalchemy(user)
+
+    async def update_players_count(
+        self, game_id: int, players_count: int
+    ) -> None:
         async with self.app.database.session() as session:
             session: AsyncSession
 
@@ -163,4 +182,50 @@ class GameAccessor(BaseAccessor):
             )
             await session.commit()
 
-        return await self.get_game_by_game_id(game_id=game_id)
+    async def create_player(
+        self, game_id: int, vk_id: int, cash: int = 1000
+    ) -> Player:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                user = await self.get_user_by_vk_id(vk_id=vk_id)
+                game = await self.get_game_by_game_id(game_id=game_id)
+
+                new_player = PlayerModel(
+                    game_id=game_id, user_id=user.user_id, cash=cash
+                )
+                session.add(new_player)
+                await session.execute(
+                    update(GameModel)
+                    .where(GameModel.game_id == game_id)
+                    .values(join_players_count=game.join_players_count + 1)
+                )
+
+        return await self.get_player_by_game_id_and_vk_id(
+            game_id=game_id, vk_id=vk_id
+        )
+
+    async def get_player_by_game_id_and_vk_id(
+        self,
+        game_id: int,
+        vk_id: int,
+    ) -> Player | None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                user = await self.get_user_by_vk_id(vk_id=vk_id)
+                if user is None:
+                    return None
+
+                result: ChunkedIteratorResult = await session.execute(
+                    select(PlayerModel).where(
+                        PlayerModel.game_id == game_id
+                        and PlayerModel.user_id == user.user_id
+                    )
+                )
+                player = result.scalar()
+
+        if player is None:
+            return None
+
+        return Player.from_sqlalchemy(player)

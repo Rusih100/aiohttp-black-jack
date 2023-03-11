@@ -27,6 +27,7 @@ class Game:
     game_id: int
     chat_id: int
     players_count: int
+    join_players_count: int
     chat: "Chat"
     players: List["Player"]
     state: Optional["State"]
@@ -37,6 +38,7 @@ class Game:
             game_id=model.game_id,
             chat_id=model.chat_id,
             players_count=model.players_count,
+            join_players_count=model.join_players_count,
             chat=Chat.from_sqlalchemy(model.chat),
             players=[
                 Player.from_sqlalchemy(player) for player in model.players
@@ -134,6 +136,7 @@ class GameModel(db):
         index=True,
     )
     players_count = Column(Integer, nullable=False)
+    join_players_count = Column(Integer, nullable=False)
 
     state: "StateModel" = relationship(
         "StateModel", back_populates="game", uselist=False, lazy="joined"
@@ -174,9 +177,14 @@ class PlayerModel(db):
 
     player_id = Column(Integer, primary_key=True)
     game_id = Column(
-        Integer, ForeignKey("games.game_id", ondelete="CASCADE"), nullable=False
+        Integer,
+        ForeignKey("games.game_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.user_id"), nullable=False, index=True
+    )
     cash = Column(Integer)
     bet = Column(Integer)
     hand = Column(JSON)
@@ -197,7 +205,7 @@ class UserModel(db):
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True)
-    vk_id = Column(Integer, nullable=False, unique=True)
+    vk_id = Column(Integer, nullable=False, unique=True, index=True)
     first_name = Column(Text, nullable=False)
     last_name = Column(Text, nullable=False)
     is_admin = Column(Boolean, nullable=False)
