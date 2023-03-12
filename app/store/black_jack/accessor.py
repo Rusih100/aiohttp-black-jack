@@ -218,10 +218,9 @@ class GameAccessor(BaseAccessor):
                     return None
 
                 result: ChunkedIteratorResult = await session.execute(
-                    select(PlayerModel).where(
-                        PlayerModel.game_id == game_id
-                        and PlayerModel.user_id == user.user_id
-                    )
+                    select(PlayerModel)
+                    .where(PlayerModel.game_id == game_id)
+                    .where(PlayerModel.user_id == user.user_id)
                 )
                 player = result.scalar()
 

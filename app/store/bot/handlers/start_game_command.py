@@ -157,7 +157,7 @@ async def inviting_players_yes(update: "Update", app: "Application"):
             game_id=game.game_id, vk_id=update.object.message.from_id
         )
         if check_player is not None:
-            message_text = f"{check_player.user.first_name} {check_player.user.last_name}, ты уже добавлен."
+            message_text = f"{check_player.user.first_name} {check_player.user.last_name} ты уже в игре"
             message = Message(
                 peer_id=update.object.message.peer_id, text=message_text
             )
@@ -169,7 +169,7 @@ async def inviting_players_yes(update: "Update", app: "Application"):
             game_id=game.game_id, vk_id=update.object.message.from_id
         )
         message_text = (
-            f"{player.user.first_name} {player.user.last_name}, ты добавлен."
+            f"{player.user.first_name} {player.user.last_name} теперь в игре"
         )
         message = Message(
             peer_id=update.object.message.peer_id, text=message_text
@@ -192,4 +192,6 @@ async def inviting_players_no(update: "Update", app: "Application"):
     """
     Действие, если пользователь отказался играть
     """
-    return
+    return  # TODO: Сделать отказ от игры
+
+
