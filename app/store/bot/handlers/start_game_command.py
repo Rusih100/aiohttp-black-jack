@@ -334,7 +334,7 @@ async def start_game_for_dealer(update: "Update", app: "Application") -> None:
     # Игра дилера
 
     message = Message(
-        peer_id=update.object.message.peer_id, text="🗿 В игру вступает диллер"
+        peer_id=update.object.message.peer_id, text="🗿 В игру вступает дилер"
     )
     await app.store.vk_api.send_message(message)
 
