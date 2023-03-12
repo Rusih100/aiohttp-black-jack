@@ -47,12 +47,7 @@ class Card:
         return f"{_emoji_suit[self.suit]} {self.type_name} {self.suit_name}"
 
 
-_emoji_suit = {
-    "Clubs": "♣️",
-    "Diamonds": "♦️",
-    "Hearts": "♥️",
-    "Spades": "♠️"
-}
+_emoji_suit = {"Clubs": "♣️", "Diamonds": "♦️", "Hearts": "♥️", "Spades": "♠️"}
 
 _all_base_suit = [
     {"suit": "Clubs", "suit_name": "Трефы"},

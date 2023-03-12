@@ -1,10 +1,10 @@
 import typing
 
+from app.store.bot.answers import BorAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
 from app.store.vk_api.dataclasses import Message, Update
-from app.store.bot.answers import BorAnswers
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -47,5 +47,7 @@ async def start_command(update: "Update", app: "Application") -> None:
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
 
-    message = Message(peer_id=update.object.message.peer_id, text=BorAnswers.BOT_NOT_ADMIN)
+    message = Message(
+        peer_id=update.object.message.peer_id, text=BorAnswers.BOT_NOT_ADMIN
+    )
     await app.store.vk_api.send_message(message=message)

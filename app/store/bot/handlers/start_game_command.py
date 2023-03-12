@@ -1,13 +1,13 @@
 import typing
 
-from app.black_jack.game.card import Card, get_rand_card, calculate_sum_cards
+from app.black_jack.game.card import calculate_sum_cards, get_rand_card
 from app.black_jack.models import Game, Player
+from app.store.bot.answers import BorAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
 from app.store.bot.states import GameStates
 from app.store.vk_api.dataclasses import Button, Keyboard, Message, Update
-from app.store.bot.answers import BorAnswers
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -83,7 +83,7 @@ async def wait_number_of_players(update: "Update", app: "Application") -> None:
         chat_id=update.object.message.peer_id
     )
 
-    if game.state.type != GameStates.WAITING_NUMBER_OF_PLAYERS:
+    if game is None or game.state.type != GameStates.WAITING_NUMBER_OF_PLAYERS:
         return
 
     number_of_players = int(update.object.message.text)
@@ -160,7 +160,7 @@ async def handle_new_players(update: "Update", app: "Application") -> None:
         chat_id=update.object.message.peer_id
     )
 
-    if game.state.type != GameStates.INVITING_PLAYERS:
+    if game is None or game.state.type != GameStates.INVITING_PLAYERS:
         return
 
     if game.state.join_players_count >= game.state.players_count:
@@ -186,9 +186,7 @@ async def handle_new_players(update: "Update", app: "Application") -> None:
     message_text = (
         f"{player.user.first_name} {player.user.last_name} теперь в игре"
     )
-    message = Message(
-        peer_id=update.object.message.peer_id, text=message_text
-    )
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message)
 
     if game.state.join_players_count + 1 == game.state.players_count:
@@ -224,7 +222,7 @@ async def start_game_for_players(update: "Update", app: "Application") -> None:
         ],
     )
     message = Message(
-        peer_id=update.object.message.peer_id, text="Отлично, начинанаем!"
+        peer_id=update.object.message.peer_id, text="Отлично, начинаем!"
     )
     await app.store.vk_api.send_message(message, keyboard)
 
@@ -239,7 +237,7 @@ async def handle_game_players_hit(update: "Update", app: "Application") -> None:
         chat_id=update.object.message.peer_id
     )
 
-    if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
+    if game is None or game.state.type != GameStates.PLAYERS_ARE_PLAYING:
         return
 
     player = await _get_player_from_game(
@@ -269,16 +267,28 @@ async def handle_game_players_hit(update: "Update", app: "Application") -> None:
     await app.store.vk_api.send_message(message)
 
     if cards_sum >= 21:
-        message_text = f"{player.user.first_name} {player.user.last_name} больше не берет"
-        message = Message(peer_id=update.object.message.peer_id, text=message_text)
+        message_text = (
+            f"{player.user.first_name} {player.user.last_name} больше не берет"
+        )
+        message = Message(
+            peer_id=update.object.message.peer_id, text=message_text
+        )
         await app.store.vk_api.send_message(message)
         await app.store.game.set_finish_for_player(player_id=player.player_id)
 
-    # TODO: Переход к следующему стейту, если количество игроков достигнуто
+        if game.state.finished_players_count + 1 == game.state.players_count:
+            # Обновляем стейт
+            await app.store.game.update_state_type(
+                game_id=game.game_id, state_type=GameStates.DEALER_ARE_PLAYING
+            )
+            # Переход на следующий этап
+            return await start_game_for_dealer(update, app)
 
 
 @router.handler(buttons_payload=["game_players_stand"])
-async def handle_game_players_stand(update: "Update", app: "Application") -> None:
+async def handle_game_players_stand(
+    update: "Update", app: "Application"
+) -> None:
     """
     Игрок отказался брать карту
     """
@@ -287,7 +297,7 @@ async def handle_game_players_stand(update: "Update", app: "Application") -> Non
         chat_id=update.object.message.peer_id
     )
 
-    if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
+    if game is None or game.state.type != GameStates.PLAYERS_ARE_PLAYING:
         return
 
     player = await _get_player_from_game(
@@ -304,4 +314,70 @@ async def handle_game_players_stand(update: "Update", app: "Application") -> Non
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message)
 
-    # TODO: Переход к следующему стейту, если количество игроков достигнуто
+    if game.state.finished_players_count + 1 == game.state.players_count:
+        # Обновляем стейт
+        await app.store.game.update_state_type(
+            game_id=game.game_id, state_type=GameStates.DEALER_ARE_PLAYING
+        )
+        # Переход на следующий этап
+        return await start_game_for_dealer(update, app)
+
+
+async def start_game_for_dealer(update: "Update", app: "Application") -> None:
+    """
+    Игра дилера и завершение игры
+    """
+    game = await app.store.game.get_game_by_chat_id(
+        chat_id=update.object.message.peer_id
+    )
+
+    # Игра дилера
+
+    message = Message(
+        peer_id=update.object.message.peer_id, text="🗿 В игру вступает диллер"
+    )
+    await app.store.vk_api.send_message(message)
+
+    dealer_cards = []
+    while (dealer_cards_sum := calculate_sum_cards(dealer_cards)) < 17:
+        card = get_rand_card()
+        dealer_cards.append(card)
+
+        message_text = f"Дилер берет карту {card}"
+        message = Message(
+            peer_id=update.object.message.peer_id, text=message_text
+        )
+        await app.store.vk_api.send_message(message)
+
+    message_text = f"Сумма карт дилера: {dealer_cards_sum}"
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    await app.store.vk_api.send_message(message)
+
+    # Подводим итоги
+
+    message_text = f"Результаты игры: {ServiceSymbols.LINE_BREAK * 2}"
+    for player in game.players:
+        player_card_sum = calculate_sum_cards(player.hand)
+
+        if dealer_cards_sum < player_card_sum <= 21:
+            player_status = "обыграл дилера 😎"
+        elif player_card_sum == dealer_cards_sum and player_card_sum <= 21:
+            player_status = "пуш 😐"
+        else:
+            player_status = "проиграл дилеру 😭"
+
+        message_text += (
+            f"⭐ {player.user.first_name} {player.user.last_name}: {ServiceSymbols.LINE_BREAK}"
+            f"Cумма очков: {player_card_sum} {ServiceSymbols.LINE_BREAK}"
+            f"Статус: {player_status} {ServiceSymbols.LINE_BREAK * 2}"
+        )
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    await app.store.vk_api.send_message(message)
+
+    await app.store.game.close_game(chat_id=update.object.message.peer_id)
+
+    message = Message(
+        peer_id=update.object.message.peer_id,
+        text=f"Сыграем еще? {BotCommands.START_GAME.value.command}",
+    )
+    await app.store.vk_api.send_message(message)
