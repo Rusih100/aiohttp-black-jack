@@ -184,7 +184,7 @@ async def inviting_players_yes(update: "Update", app: "Application"):
             await app.store.vk_api.send_message(message)
             # TODO: Смена стейта
             # Переход на следующий этап
-            return
+            return await game_players(update, app)
 
 
 @router.handler(buttons_payload=["invite_keyboard_no"])
@@ -195,3 +195,24 @@ async def inviting_players_no(update: "Update", app: "Application"):
     return  # TODO: Сделать отказ от игры
 
 
+async def game_players(update: "Update", app: "Application"):
+    """
+    Рассылает клавиатуру с кнопками для игры
+    """
+
+    # Нужна ли тут проверка стейта? Думаю нет
+
+    keyboard = Keyboard(
+        one_time=False,
+        inline=False,
+        buttons=[
+            [
+                Button.TextButton("Хватит", "game_players_stand"),
+                Button.TextButton("Взять карту", "game_players_hit"),
+            ]
+        ],
+    )
+    message = Message(
+        peer_id=update.object.message.peer_id, text=""
+    )
+    await app.store.vk_api.send_message(message, keyboard)
