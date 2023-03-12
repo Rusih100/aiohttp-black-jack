@@ -12,6 +12,8 @@ if typing.TYPE_CHECKING:
 
 router = Router()
 
+# TODO: Прокинуть стейт в хэндлер для проверки стейта под капотом
+
 
 @router.handler(commands=[BotCommands.START_GAME.value.command])
 async def start_game(update: "Update", app: "Application"):
