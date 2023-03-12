@@ -12,7 +12,7 @@ router = Router()
 
 
 @router.handler(commands=[BotCommands.STOP_GAME.value.command])
-async def stop_game(update: "Update", app: "Application"):
+async def stop_game(update: "Update", app: "Application") -> None:
     """
     Выводит результаты и останавливает игровую сессию
     """

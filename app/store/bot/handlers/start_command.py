@@ -4,6 +4,7 @@ from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
 from app.store.vk_api.dataclasses import Message, Update
+from app.store.bot.answers import BorAnswers
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -17,7 +18,7 @@ router = Router()
     func=lambda update: update.object.message.action.type == "chat_invite_user"
     and update.object.message.action.member_id == -218833701
 )
-async def invite_bot(update: "Update", app: "Application"):
+async def invite_bot(update: "Update", app: "Application") -> None:
     """
     Вызывает функцию приветствия, когда бота добавили в чат.
     """
@@ -25,7 +26,7 @@ async def invite_bot(update: "Update", app: "Application"):
 
 
 @router.handler(commands=[BotCommands.START.value.command])
-async def start_command(update: "Update", app: "Application"):
+async def start_command(update: "Update", app: "Application") -> None:
     """
     Отправляет приветствие.
     Добавляет чат в БД.
@@ -46,8 +47,5 @@ async def start_command(update: "Update", app: "Application"):
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message=message)
 
-    message_text = (
-        "Для коректной работы бота нужно сделать бота администратором чата"
-    )
-    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    message = Message(peer_id=update.object.message.peer_id, text=BorAnswers.BOT_NOT_ADMIN)
     await app.store.vk_api.send_message(message=message)

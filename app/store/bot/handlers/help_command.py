@@ -13,7 +13,7 @@ router = Router()
 
 
 @router.handler(commands=[BotCommands.HELP.value.command])
-async def help_command(update: "Update", app: "Application"):
+async def help_command(update: "Update", app: "Application") -> None:
     """
     Отправляет список команд бота
     """

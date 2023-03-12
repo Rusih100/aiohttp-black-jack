@@ -7,6 +7,7 @@ from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
 from app.store.bot.states import GameStates
 from app.store.vk_api.dataclasses import Button, Keyboard, Message, Update
+from app.store.bot.answers import BorAnswers
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -15,10 +16,11 @@ if typing.TYPE_CHECKING:
 router = Router()
 
 # TODO: Прокинуть стейт в хэндлер для проверки стейта под капотом
+# TODO: Сделать логи
 
 
 @router.handler(commands=[BotCommands.START_GAME.value.command])
-async def start_game(update: "Update", app: "Application"):
+async def start_game(update: "Update", app: "Application") -> None:
     """
     Создает игровую сессию, если она уже не создана.
     Спрашивает сколько игроков будет играть
@@ -26,10 +28,10 @@ async def start_game(update: "Update", app: "Application"):
     chat_id = update.object.message.peer_id
 
     # Проверяем идет ли игра
-    check_game = await app.store.game.get_game_by_chat_id(chat_id=chat_id)
+    id_game_exist = await app.store.game.get_game_by_chat_id(chat_id=chat_id)
 
     # Если игра уже идет, выходим
-    if check_game is not None:
+    if id_game_exist is not None:
         message = Message(
             peer_id=update.object.message.peer_id, text="Игра уже идет"
         )
@@ -44,7 +46,7 @@ async def start_game(update: "Update", app: "Application"):
     if not profiles:
         message = Message(
             peer_id=update.object.message.peer_id,
-            text="Для коректной работы бота нужно сделать бота администратором чата",
+            text=BorAnswers.BOT_NOT_ADMIN,
         )
         await app.store.vk_api.send_message(message=message)
         return
@@ -73,7 +75,7 @@ def _validate_int(update: Update) -> bool:
 
 # В хэдлер прилетят все сообщения содержащие только целые числа, далее проверим стейт
 @router.handler(func=_validate_int)
-async def waiting_number_of_players(update: "Update", app: "Application"):
+async def wait_number_of_players(update: "Update", app: "Application") -> None:
     """
     Ожидает количество игроков для игры, как только получает, меняет стейт и вызывает следующий хэндлер
     """
@@ -102,6 +104,8 @@ async def waiting_number_of_players(update: "Update", app: "Application"):
         await app.store.vk_api.send_message(message=message)
         return
 
+    # TODO: Транзакция
+
     # Обновляем количество игроков
     await app.store.game.update_players_count(
         game_id=game.game_id, players_count=number_of_players
@@ -115,15 +119,13 @@ async def waiting_number_of_players(update: "Update", app: "Application"):
     message = Message(peer_id=update.object.message.peer_id, text="Принял")
     await app.store.vk_api.send_message(message=message)
 
-    return await inviting_players(update, app)
+    return await invite_players_to_game(update, app)
 
 
-async def inviting_players(update: "Update", app: "Application"):
+async def invite_players_to_game(update: "Update", app: "Application") -> None:
     """
     Рассылает клавиатуру с опросом, будет ли пользователь играть
     """
-
-    # Нужна ли тут проверка стейта? Думаю нет
 
     keyboard = Keyboard(
         one_time=False,
@@ -149,7 +151,7 @@ async def _get_player_from_game(vk_id: int, game: Game) -> Player | None:
 
 
 @router.handler(buttons_payload=["invite_keyboard_yes"])
-async def inviting_players_yes(update: "Update", app: "Application"):
+async def handle_new_players(update: "Update", app: "Application") -> None:
     """
     Действие, если пользователь согласился играть
     """
@@ -161,56 +163,55 @@ async def inviting_players_yes(update: "Update", app: "Application"):
     if game.state.type != GameStates.INVITING_PLAYERS:
         return
 
-    # Добавляем игрока
-    if game.state.join_players_count < game.state.players_count:
-        # Проверка на наличие игрока
-        check_player = await _get_player_from_game(
-            vk_id=update.object.message.from_id, game=game
-        )
+    if game.state.join_players_count >= game.state.players_count:
+        return
 
-        if check_player is not None:
-            message_text = f"{check_player.user.first_name} {check_player.user.last_name} ты уже в игре"
-            message = Message(
-                peer_id=update.object.message.peer_id, text=message_text
-            )
-            await app.store.vk_api.send_message(message)
-            return
+    # Проверка на наличие игрока
+    is_player_exists = await _get_player_from_game(
+        vk_id=update.object.message.from_id, game=game
+    )
 
-        # Добавляем игрока
-        player = await app.store.game.create_player(
-            game_id=game.game_id, vk_id=update.object.message.from_id
-        )
-        message_text = (
-            f"{player.user.first_name} {player.user.last_name} теперь в игре"
-        )
+    if is_player_exists is not None:
+        message_text = f"{is_player_exists.user.first_name} {is_player_exists.user.last_name} ты уже в игре"
         message = Message(
             peer_id=update.object.message.peer_id, text=message_text
         )
         await app.store.vk_api.send_message(message)
+        return
 
-        if game.state.join_players_count + 1 == game.state.players_count:
-            # Обновляем стейт
-            await app.store.game.update_state_type(
-                game_id=game.game_id, state_type=GameStates.PLAYERS_ARE_PLAYING
-            )
-            # Переход на следующий этап
-            return await game_players(update, app)
+    # Добавляем игрока
+    player = await app.store.game.create_player(
+        game_id=game.game_id, vk_id=update.object.message.from_id
+    )
+    message_text = (
+        f"{player.user.first_name} {player.user.last_name} теперь в игре"
+    )
+    message = Message(
+        peer_id=update.object.message.peer_id, text=message_text
+    )
+    await app.store.vk_api.send_message(message)
+
+    if game.state.join_players_count + 1 == game.state.players_count:
+        # Обновляем стейт
+        await app.store.game.update_state_type(
+            game_id=game.game_id, state_type=GameStates.PLAYERS_ARE_PLAYING
+        )
+        # Переход на следующий этап
+        return await start_game_for_players(update, app)
 
 
 @router.handler(buttons_payload=["invite_keyboard_no"])
-async def inviting_players_no(update: "Update", app: "Application"):
+async def handle_rejected_players(update: "Update", app: "Application") -> None:
     """
     Действие, если пользователь отказался играть
     """
     return  # TODO: Сделать отказ от игры
 
 
-async def game_players(update: "Update", app: "Application"):
+async def start_game_for_players(update: "Update", app: "Application") -> None:
     """
     Рассылает клавиатуру с кнопками для игры
     """
-
-    # Нужна ли тут проверка стейта? Думаю нет
 
     keyboard = Keyboard(
         one_time=False,
@@ -229,7 +230,7 @@ async def game_players(update: "Update", app: "Application"):
 
 
 @router.handler(buttons_payload=["game_players_hit"])
-async def game_players_hit(update: "Update", app: "Application"):
+async def handle_game_players_hit(update: "Update", app: "Application") -> None:
     """
     Игрок берет карту
     """
@@ -277,7 +278,7 @@ async def game_players_hit(update: "Update", app: "Application"):
 
 
 @router.handler(buttons_payload=["game_players_stand"])
-async def game_players_stand(update: "Update", app: "Application"):
+async def handle_game_players_stand(update: "Update", app: "Application") -> None:
     """
     Игрок отказался брать карту
     """
