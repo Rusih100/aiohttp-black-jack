@@ -18,16 +18,9 @@ class Chat:
 
 
 @dataclass
-class Card:
-    pass
-
-
-@dataclass
 class Game:
     game_id: int
     chat_id: int
-    players_count: int
-    join_players_count: int
     chat: "Chat"
     players: List["Player"]
     state: Optional["State"]
@@ -37,8 +30,6 @@ class Game:
         return cls(
             game_id=model.game_id,
             chat_id=model.chat_id,
-            players_count=model.players_count,
-            join_players_count=model.join_players_count,
             chat=Chat.from_sqlalchemy(model.chat),
             players=[
                 Player.from_sqlalchemy(player) for player in model.players
@@ -52,9 +43,9 @@ class State:
     state_id: int
     game_id: int
     type: GameStates
-    deck: List["Card"]
-    current_player_id: Optional[int] = None
-    current_player: Optional["Player"] = None
+    players_count: int
+    join_players_count: int
+    finished_players_count: int
 
     @classmethod
     def from_sqlalchemy(cls, model: "StateModel") -> "State":
@@ -62,13 +53,9 @@ class State:
             state_id=model.state_id,
             game_id=model.state_id,
             type=model.type,
-            deck=model.deck,  # TODO: Сделать преобразование карт из JSON
-            current_player_id=model.current_player_id
-            if model.current_player_id
-            else None,
-            current_player=Player.from_sqlalchemy(model.current_player)
-            if model.current_player
-            else None,
+            players_count=model.players_count,
+            join_players_count=model.join_players_count,
+            finished_players_count=model.finished_players_count,
         )
 
 
@@ -79,6 +66,7 @@ class Player:
     user_id: int
     cash: int
     bet: int
+    is_finished: bool
     hand: List["Card"]
     user: "User"
 
@@ -92,6 +80,7 @@ class Player:
             bet=model.bet,
             hand=model.hand,  # TODO: Сделать преобразование карт из JSON
             user=model.user,
+            is_finished=model.is_finished,
         )
 
 
@@ -119,7 +108,9 @@ class ChatModel(db):
 
     chat_id = Column(Integer, primary_key=True)
 
-    games: List["GameModel"] = relationship("GameModel", back_populates="chat")
+    game: "GameModel" = relationship(
+        "GameModel", back_populates="chat", uselist=False
+    )
 
     def __repr__(self):
         return f"ChatModel(chat_id={self.chat_id!r}, title={self.title!r})"
@@ -135,14 +126,12 @@ class GameModel(db):
         nullable=False,
         index=True,
     )
-    players_count = Column(Integer, nullable=False)
-    join_players_count = Column(Integer, nullable=False)
 
     state: "StateModel" = relationship(
         "StateModel", back_populates="game", uselist=False, lazy="joined"
     )
     chat: "ChatModel" = relationship(
-        "ChatModel", back_populates="games", lazy="joined"
+        "ChatModel", back_populates="game", lazy="joined"
     )
     players: List["PlayerModel"] = relationship(
         "PlayerModel", back_populates="game", lazy="joined"
@@ -162,14 +151,17 @@ class StateModel(db):
         nullable=False,
         index=True,
     )
+    players_count = Column(Integer, nullable=False)
+    join_players_count = Column(Integer, nullable=False)
+    finished_players_count = Column(Integer, nullable=False)
     type = Column(Enum(GameStates), nullable=False)
-    deck = Column(JSON)
-    current_player_id = Column(Integer, ForeignKey("players.player_id"))
 
-    current_player: "PlayerModel" = relationship(
-        "PlayerModel", back_populates="state", lazy="joined"
-    )
     game: "GameModel" = relationship("GameModel", back_populates="state")
+
+    def __repr__(self):
+        return (
+            f"StateModel(state_id={self.state_id!r}, game_id={self.game_id!r})"
+        )
 
 
 class PlayerModel(db):
@@ -185,14 +177,12 @@ class PlayerModel(db):
     user_id = Column(
         Integer, ForeignKey("users.user_id"), nullable=False, index=True
     )
+    is_finished = Column(Boolean, nullable=False)
     cash = Column(Integer)
     bet = Column(Integer)
     hand = Column(JSON)
 
     game: "GameModel" = relationship("GameModel", back_populates="players")
-    state: "StateModel" = relationship(
-        "StateModel", back_populates="current_player"
-    )
     user: "UserModel" = relationship(
         "UserModel", back_populates="players", lazy="joined"
     )

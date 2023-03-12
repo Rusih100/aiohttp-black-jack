@@ -68,9 +68,12 @@ class GameAccessor(BaseAccessor):
             async with session.begin():
                 new_game = GameModel(
                     chat_id=chat_id,
-                    players_count=0,
-                    join_players_count=0,
-                    state=StateModel(type=GameStates.WAITING_NUMBER_OF_PLAYERS),
+                    state=StateModel(
+                        type=GameStates.WAITING_NUMBER_OF_PLAYERS,
+                        players_count=0,
+                        join_players_count=0,
+                        finished_players_count=0,
+                    ),
                 )
                 new_users = [
                     {
@@ -131,7 +134,7 @@ class GameAccessor(BaseAccessor):
             result: ChunkedIteratorResult = await session.execute(
                 select(StateModel)
                 .where(StateModel.game_id == game_id)
-                .options(joinedload("current_player"), joinedload("game"))
+                .options(joinedload("game"))
             )
             state = result.scalar()
 
@@ -176,8 +179,8 @@ class GameAccessor(BaseAccessor):
             session: AsyncSession
 
             await session.execute(
-                update(GameModel)
-                .where(GameModel.game_id == game_id)
+                update(StateModel)
+                .where(StateModel.game_id == game_id)
                 .values(players_count=players_count)
             )
             await session.commit()
@@ -192,13 +195,15 @@ class GameAccessor(BaseAccessor):
                 game = await self.get_game_by_game_id(game_id=game_id)
 
                 new_player = PlayerModel(
-                    game_id=game_id, user_id=user.user_id, cash=cash
+                    game_id=game_id, user_id=user.user_id, cash=cash, is_finished=False
                 )
                 session.add(new_player)
                 await session.execute(
-                    update(GameModel)
-                    .where(GameModel.game_id == game_id)
-                    .values(join_players_count=game.join_players_count + 1)
+                    update(StateModel)
+                    .where(StateModel.game_id == game_id)
+                    .values(
+                        join_players_count=game.state.join_players_count + 1
+                    )
                 )
 
         return await self.get_player_by_game_id_and_vk_id(

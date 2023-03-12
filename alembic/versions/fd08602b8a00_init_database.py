@@ -1,16 +1,16 @@
 """Init database
 
-Revision ID: 9c7d0225d08a
+Revision ID: fd08602b8a00
 Revises: 
-Create Date: 2023-03-11 13:20:39.746146
+Create Date: 2023-03-12 13:34:45.825915
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '9c7d0225d08a'
+revision = 'fd08602b8a00'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,8 +41,6 @@ def upgrade() -> None:
     op.create_table('games',
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('chat_id', sa.Integer(), nullable=False),
-    sa.Column('players_count', sa.Integer(), nullable=False),
-    sa.Column('join_players_count', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['chat_id'], ['chats.chat_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('game_id')
     )
@@ -51,6 +49,7 @@ def upgrade() -> None:
     sa.Column('player_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('is_finished', sa.Boolean(), nullable=False),
     sa.Column('cash', sa.Integer(), nullable=True),
     sa.Column('bet', sa.Integer(), nullable=True),
     sa.Column('hand', sa.JSON(), nullable=True),
@@ -63,10 +62,10 @@ def upgrade() -> None:
     op.create_table('states',
     sa.Column('state_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', 'INVITING_PLAYERS', name='gamestates'), nullable=False),
-    sa.Column('deck', sa.JSON(), nullable=True),
-    sa.Column('current_player_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['current_player_id'], ['players.player_id'], ),
+    sa.Column('players_count', sa.Integer(), nullable=False),
+    sa.Column('join_players_count', sa.Integer(), nullable=False),
+    sa.Column('finished_players_count', sa.Integer(), nullable=False),
+    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', 'INVITING_PLAYERS', 'PLAYERS_ARE_PLAYING', name='gamestates'), nullable=False),
     sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('state_id')
     )

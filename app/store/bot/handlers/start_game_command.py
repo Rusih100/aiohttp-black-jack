@@ -151,7 +151,7 @@ async def inviting_players_yes(update: "Update", app: "Application"):
         return
 
     # Добавляем игрока
-    if game.join_players_count < game.players_count:
+    if game.state.join_players_count < game.state.players_count:
         # Проверка на наличие игрока
         check_player = await app.store.game.get_player_by_game_id_and_vk_id(
             game_id=game.game_id, vk_id=update.object.message.from_id
@@ -176,13 +176,11 @@ async def inviting_players_yes(update: "Update", app: "Application"):
         )
         await app.store.vk_api.send_message(message)
 
-        if game.join_players_count + 1 == game.players_count:
-            message = Message(
-                peer_id=update.object.message.peer_id,
-                text="Отлично, начинанаем!",
+        if game.state.join_players_count + 1 == game.state.players_count:
+            # Обновляем стейт
+            await app.store.game.update_state_type(
+                game_id=game.game_id, state_type=GameStates.PLAYERS_ARE_PLAYING
             )
-            await app.store.vk_api.send_message(message)
-            # TODO: Смена стейта
             # Переход на следующий этап
             return await game_players(update, app)
 
@@ -212,7 +210,6 @@ async def game_players(update: "Update", app: "Application"):
             ]
         ],
     )
-    message = Message(
-        peer_id=update.object.message.peer_id, text=""
-    )
+    message = Message(peer_id=update.object.message.peer_id, text="Отлично, начинанаем!")
     await app.store.vk_api.send_message(message, keyboard)
+
