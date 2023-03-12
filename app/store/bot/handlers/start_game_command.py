@@ -213,3 +213,34 @@ async def game_players(update: "Update", app: "Application"):
     message = Message(peer_id=update.object.message.peer_id, text="Отлично, начинанаем!")
     await app.store.vk_api.send_message(message, keyboard)
 
+
+@router.handler(buttons_payload=["game_players_hit"])
+async def game_players_hit(update: "Update", app: "Application"):
+    """
+    Игрок берет карту
+    """
+
+    game = await app.store.game.get_game_by_chat_id(
+        chat_id=update.object.message.peer_id
+    )
+
+    if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
+        return
+
+
+@router.handler(buttons_payload=["game_players_stand"])
+async def game_players_stand(update: "Update", app: "Application"):
+    """
+    Игрок отказался брать карту
+    """
+
+    game = await app.store.game.get_game_by_chat_id(
+        chat_id=update.object.message.peer_id
+    )
+
+    if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
+        return
+
+
+
+
