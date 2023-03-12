@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.base.base_accessor import BaseAccessor
+from app.black_jack.game.card import Card
 from app.black_jack.models import (
     Chat,
     ChatModel,
@@ -195,7 +196,11 @@ class GameAccessor(BaseAccessor):
                 game = await self.get_game_by_game_id(game_id=game_id)
 
                 new_player = PlayerModel(
-                    game_id=game_id, user_id=user.user_id, cash=cash, is_finished=False
+                    game_id=game_id,
+                    user_id=user.user_id,
+                    cash=cash,
+                    is_finished=False,
+                    hand={"cards": []},
                 )
                 session.add(new_player)
                 await session.execute(
@@ -233,3 +238,45 @@ class GameAccessor(BaseAccessor):
             return None
 
         return Player.from_sqlalchemy(player)
+
+    async def get_player_by_player_id(self, player_id: int) -> Player | None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                result: ChunkedIteratorResult = await session.execute(
+                    select(PlayerModel).where(
+                        PlayerModel.player_id == player_id
+                    )
+                )
+                player = result.scalar()
+
+        if player is None:
+            return None
+
+        return Player.from_sqlalchemy(player)
+
+    async def set_finish_for_player(self, player_id: int) -> None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            await session.execute(
+                update(PlayerModel)
+                .where(PlayerModel.player_id == player_id)
+                .values(is_finished=True)
+            )
+            await session.commit()
+
+    async def add_card_for_player(self, player_id: int, card: Card) -> None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                player = await self.get_player_by_player_id(player_id=player_id)
+
+                cards = player.hand
+                cards.append(card)
+
+                await session.execute(
+                    update(PlayerModel)
+                    .where(PlayerModel.player_id == player_id)
+                    .values(hand={"cards": [card.to_dict for card in cards]})
+                )

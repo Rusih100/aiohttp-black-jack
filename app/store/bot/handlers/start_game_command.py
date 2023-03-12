@@ -1,5 +1,7 @@
 import typing
 
+from app.black_jack.game.card import Card, get_rand_card, calculate_sum_cards
+from app.black_jack.models import Game, Player
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
@@ -139,6 +141,13 @@ async def inviting_players(update: "Update", app: "Application"):
     await app.store.vk_api.send_message(message, keyboard)
 
 
+async def _get_player_from_game(vk_id: int, game: Game) -> Player | None:
+    for player in game.players:
+        if player.user.vk_id == vk_id:
+            return player
+    return None
+
+
 @router.handler(buttons_payload=["invite_keyboard_yes"])
 async def inviting_players_yes(update: "Update", app: "Application"):
     """
@@ -155,9 +164,10 @@ async def inviting_players_yes(update: "Update", app: "Application"):
     # Добавляем игрока
     if game.state.join_players_count < game.state.players_count:
         # Проверка на наличие игрока
-        check_player = await app.store.game.get_player_by_game_id_and_vk_id(
-            game_id=game.game_id, vk_id=update.object.message.from_id
+        check_player = await _get_player_from_game(
+            vk_id=update.object.message.from_id, game=game
         )
+
         if check_player is not None:
             message_text = f"{check_player.user.first_name} {check_player.user.last_name} ты уже в игре"
             message = Message(
@@ -212,7 +222,9 @@ async def game_players(update: "Update", app: "Application"):
             ]
         ],
     )
-    message = Message(peer_id=update.object.message.peer_id, text="Отлично, начинанаем!")
+    message = Message(
+        peer_id=update.object.message.peer_id, text="Отлично, начинанаем!"
+    )
     await app.store.vk_api.send_message(message, keyboard)
 
 
@@ -229,6 +241,40 @@ async def game_players_hit(update: "Update", app: "Application"):
     if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
         return
 
+    player = await _get_player_from_game(
+        vk_id=update.object.message.from_id, game=game
+    )
+    if player is None or player.is_finished:
+        return
+
+    # Даем игроку карту
+
+    card = get_rand_card()
+    await app.store.game.add_card_for_player(
+        player_id=player.player_id, card=card
+    )
+
+    player_cards = player.hand
+    player_cards.append(card)
+    cards_sum = calculate_sum_cards(player_cards)
+
+    message_text = f"{player.user.first_name} {player.user.last_name}, выдаю {card} {ServiceSymbols.LINE_BREAK * 2}"
+    message_text += f"Твои карты: {ServiceSymbols.LINE_BREAK}"
+    for card in player_cards:
+        message_text += f"{card}{ServiceSymbols.LINE_BREAK}"
+    message_text += f"{ServiceSymbols.LINE_BREAK}Сумма карт: {cards_sum}"
+
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    await app.store.vk_api.send_message(message)
+
+    if cards_sum >= 21:
+        message_text = f"{player.user.first_name} {player.user.last_name} больше не берет"
+        message = Message(peer_id=update.object.message.peer_id, text=message_text)
+        await app.store.vk_api.send_message(message)
+        await app.store.game.set_finish_for_player(player_id=player.player_id)
+
+    # TODO: Переход к следующему стейту, если количество игроков достигнуто
+
 
 @router.handler(buttons_payload=["game_players_stand"])
 async def game_players_stand(update: "Update", app: "Application"):
@@ -243,6 +289,18 @@ async def game_players_stand(update: "Update", app: "Application"):
     if game.state.type != GameStates.PLAYERS_ARE_PLAYING:
         return
 
+    player = await _get_player_from_game(
+        vk_id=update.object.message.from_id, game=game
+    )
+    if player is None or player.is_finished:
+        return
 
+    # Меняем is_finished у игрока
 
+    await app.store.game.set_finish_for_player(player_id=player.player_id)
 
+    message_text = f"{player.user.first_name} {player.user.last_name} - пасс"
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
+    await app.store.vk_api.send_message(message)
+
+    # TODO: Переход к следующему стейту, если количество игроков достигнуто

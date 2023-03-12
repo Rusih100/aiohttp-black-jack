@@ -4,6 +4,7 @@ from typing import List, Optional
 from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import relationship
 
+from app.black_jack.game.card import Card
 from app.store.bot.states import GameStates
 from app.store.database.sqlalchemy_base import db
 
@@ -70,6 +71,11 @@ class Player:
     hand: List["Card"]
     user: "User"
 
+    @staticmethod
+    def _parse_hand(hand: dict) -> List["Card"]:
+        raw_cards = hand["cards"]
+        return [Card(**raw_card) for raw_card in raw_cards]
+
     @classmethod
     def from_sqlalchemy(cls, model: "PlayerModel") -> "Player":
         return cls(
@@ -78,7 +84,7 @@ class Player:
             user_id=model.user_id,
             cash=model.cash,
             bet=model.bet,
-            hand=model.hand,  # TODO: Сделать преобразование карт из JSON
+            hand=cls._parse_hand(model.hand),
             user=model.user,
             is_finished=model.is_finished,
         )
