@@ -46,6 +46,7 @@ class State:
     type: GameStates
     players_count: int
     join_players_count: int
+    bet_placed_players_count: int
     finished_players_count: int
 
     @classmethod
@@ -56,6 +57,7 @@ class State:
             type=model.type,
             players_count=model.players_count,
             join_players_count=model.join_players_count,
+            bet_placed_players_count=model.bet_placed_players_count,
             finished_players_count=model.finished_players_count,
         )
 
@@ -67,6 +69,7 @@ class Player:
     user_id: int
     cash: int
     bet: int
+    is_bet_placed: int
     is_finished: bool
     hand: List["Card"]
     user: "User"
@@ -86,6 +89,7 @@ class Player:
             bet=model.bet,
             hand=cls._parse_hand(model.hand),
             user=model.user,
+            is_bet_placed=model.is_bet_placed,
             is_finished=model.is_finished,
         )
 
@@ -159,6 +163,7 @@ class StateModel(db):
     )
     players_count = Column(Integer, nullable=False)
     join_players_count = Column(Integer, nullable=False)
+    bet_placed_players_count = Column(Integer, nullable=False)
     finished_players_count = Column(Integer, nullable=False)
     type = Column(Enum(GameStates), nullable=False)
 
@@ -183,6 +188,7 @@ class PlayerModel(db):
     user_id = Column(
         Integer, ForeignKey("users.user_id"), nullable=False, index=True
     )
+    is_bet_placed = Column(Boolean, nullable=False)
     is_finished = Column(Boolean, nullable=False)
     cash = Column(Integer)
     bet = Column(Integer)

@@ -67,12 +67,19 @@ class GameAccessor(BaseAccessor):
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():
+
+                chat = await self.get_chat_by_id(chat_id=chat_id)
+
+                if chat is None:
+                    await self.create_chat(chat_id=chat_id)
+
                 new_game = GameModel(
                     chat_id=chat_id,
                     state=StateModel(
                         type=GameStates.WAITING_NUMBER_OF_PLAYERS,
                         players_count=0,
                         join_players_count=0,
+                        bet_placed_players_count=0,
                         finished_players_count=0,
                     ),
                 )
@@ -199,6 +206,7 @@ class GameAccessor(BaseAccessor):
                     game_id=game_id,
                     user_id=user.user_id,
                     cash=cash,
+                    is_bet_placed=False,
                     is_finished=False,
                     hand={"cards": []},
                 )
@@ -255,16 +263,44 @@ class GameAccessor(BaseAccessor):
 
         return Player.from_sqlalchemy(player)
 
-    async def set_finish_for_player(self, player_id: int) -> None:
+    async def set_bet(self, game_id: int, player_id: int, bet: int) -> None:
         async with self.app.database.session() as session:
             session: AsyncSession
+            async with session.begin():
+                game = await self.get_game_by_game_id(game_id=game_id)
 
-            await session.execute(
-                update(PlayerModel)
-                .where(PlayerModel.player_id == player_id)
-                .values(is_finished=True)
-            )
-            await session.commit()
+                await session.execute(
+                    update(PlayerModel)
+                    .where(PlayerModel.player_id == player_id)
+                    .values(is_bet_placed=True)
+                    .values(bet=bet)
+                )
+                await session.execute(
+                    update(StateModel)
+                    .where(StateModel.game_id == game_id)
+                    .values(
+                        bet_placed_players_count=game.state.bet_placed_players_count + 1
+                    )
+                )
+
+    async def set_finish_for_player(self, game_id: int, player_id: int) -> None:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+            async with session.begin():
+                game = await self.get_game_by_game_id(game_id=game_id)
+
+                await session.execute(
+                    update(PlayerModel)
+                    .where(PlayerModel.player_id == player_id)
+                    .values(is_finished=True)
+                )
+                await session.execute(
+                    update(StateModel)
+                    .where(StateModel.game_id == game_id)
+                    .values(
+                        finished_players_count=game.state.finished_players_count + 1
+                    )
+                )
 
     async def add_card_for_player(self, player_id: int, card: Card) -> None:
         async with self.app.database.session() as session:

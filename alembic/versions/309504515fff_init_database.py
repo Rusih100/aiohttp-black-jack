@@ -1,16 +1,16 @@
 """Init database
 
-Revision ID: 77a321e16e69
+Revision ID: 309504515fff
 Revises: 
-Create Date: 2023-03-13 00:01:54.903452
+Create Date: 2023-03-13 17:37:45.338549
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '77a321e16e69'
+revision = '309504515fff'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -49,6 +49,7 @@ def upgrade() -> None:
     sa.Column('player_id', sa.Integer(), nullable=False),
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('is_bet_placed', sa.Boolean(), nullable=False),
     sa.Column('is_finished', sa.Boolean(), nullable=False),
     sa.Column('cash', sa.Integer(), nullable=True),
     sa.Column('bet', sa.Integer(), nullable=True),
@@ -64,8 +65,9 @@ def upgrade() -> None:
     sa.Column('game_id', sa.Integer(), nullable=False),
     sa.Column('players_count', sa.Integer(), nullable=False),
     sa.Column('join_players_count', sa.Integer(), nullable=False),
+    sa.Column('bet_placed_players_count', sa.Integer(), nullable=False),
     sa.Column('finished_players_count', sa.Integer(), nullable=False),
-    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', 'INVITING_PLAYERS', 'PLAYERS_ARE_PLAYING', 'DEALER_ARE_PLAYING', name='gamestates'), nullable=False),
+    sa.Column('type', sa.Enum('WAITING_NUMBER_OF_PLAYERS', 'INVITING_PLAYERS', 'PLAYERS_PLACE_BETS', 'PLAYERS_ARE_PLAYING', 'DEALER_ARE_PLAYING', name='gamestates'), nullable=False),
     sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('state_id')
     )
