@@ -6,7 +6,6 @@ from app.web.app import setup_app
 
 if __name__ == "__main__":
     run_app(
-        host="localhost",
         port=8080,
         app=setup_app(
             config_path=os.path.join(

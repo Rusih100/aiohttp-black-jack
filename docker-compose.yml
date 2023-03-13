@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+
+  database:
+    container_name: database
+    image: "postgres"
+    restart: always
+    environment:
+      POSTGRES_DB: "aiohttp_black_jack"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "dtKLoAJNzWsCewbah20W"
+
+    ports:
+      - "5432:5432"
+
+  app:
+    container_name: app
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    command: bash -c "export PYTHONPATH=. && alembic upgrade head && python main.py"
+    depends_on:
+      - database
+
+
+
