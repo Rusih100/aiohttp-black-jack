@@ -10,7 +10,6 @@ services:
       POSTGRES_DB: "aiohttp_black_jack"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "dtKLoAJNzWsCewbah20W"
-
     ports:
       - "5432:5432"
 

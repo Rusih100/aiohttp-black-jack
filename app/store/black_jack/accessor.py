@@ -5,7 +5,7 @@ from sqlalchemy import delete, exc, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine import ChunkedIteratorResult
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.base.base_accessor import BaseAccessor
 from app.black_jack.game.card import Card
@@ -67,7 +67,6 @@ class GameAccessor(BaseAccessor):
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():
-
                 chat = await self.get_chat_by_id(chat_id=chat_id)
 
                 if chat is None:
@@ -151,6 +150,19 @@ class GameAccessor(BaseAccessor):
 
         return State.from_sqlalchemy(state)
 
+    async def get_all_games(self) -> List[Game]:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(GameModel)
+                .options(selectinload(GameModel.state))
+                .options(selectinload(GameModel.players))
+            )
+            games = result.scalars()
+
+        return [Game.from_sqlalchemy(game) for game in games]
+
     async def update_state_type(
         self, game_id: int, state_type: GameStates
     ) -> State:
@@ -206,6 +218,7 @@ class GameAccessor(BaseAccessor):
                     game_id=game_id,
                     user_id=user.user_id,
                     cash=cash,
+                    bet=0,
                     is_bet_placed=False,
                     is_finished=False,
                     hand={"cards": []},
@@ -279,7 +292,8 @@ class GameAccessor(BaseAccessor):
                     update(StateModel)
                     .where(StateModel.game_id == game_id)
                     .values(
-                        bet_placed_players_count=game.state.bet_placed_players_count + 1
+                        bet_placed_players_count=game.state.bet_placed_players_count
+                        + 1
                     )
                 )
 
@@ -298,7 +312,8 @@ class GameAccessor(BaseAccessor):
                     update(StateModel)
                     .where(StateModel.game_id == game_id)
                     .values(
-                        finished_players_count=game.state.finished_players_count + 1
+                        finished_players_count=game.state.finished_players_count
+                        + 1
                     )
                 )
 

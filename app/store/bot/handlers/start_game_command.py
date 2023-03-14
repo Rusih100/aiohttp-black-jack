@@ -210,11 +210,11 @@ async def offer_to_place_bet(update: "Update", app: "Application") -> None:
     """
     Бот отсылает предложение сделать ставку
     """
-    message_text = f"Игроки, сделайте ваши ставки {ServiceSymbols.LINE_BREAK}" \
-                   f"Ожидаю число от каждого число"
-    message = Message(
-        peer_id=update.object.message.peer_id, text=message_text
+    message_text = (
+        f"Игроки, сделайте ваши ставки {ServiceSymbols.LINE_BREAK}"
+        f"Ожидаю число от каждого число"
     )
+    message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message)
 
 
@@ -240,7 +240,9 @@ async def handle_players_bet(update: "Update", app: "Application") -> None:
     if player is None or player.is_bet_placed:
         return
 
-    await app.store.game.set_bet(game_id=game.game_id, player_id=player.player_id, bet=bet)
+    await app.store.game.set_bet(
+        game_id=game.game_id, player_id=player.player_id, bet=bet
+    )
 
     if game.state.bet_placed_players_count + 1 == game.state.players_count:
         # Обновляем стейт
@@ -319,7 +321,9 @@ async def handle_game_players_hit(update: "Update", app: "Application") -> None:
             peer_id=update.object.message.peer_id, text=message_text
         )
         await app.store.vk_api.send_message(message)
-        await app.store.game.set_finish_for_player(game_id=game.game_id, player_id=player.player_id)
+        await app.store.game.set_finish_for_player(
+            game_id=game.game_id, player_id=player.player_id
+        )
 
         if game.state.finished_players_count + 1 == game.state.players_count:
             # Обновляем стейт
@@ -353,7 +357,9 @@ async def handle_game_players_stand(
 
     # Меняем is_finished у игрока
 
-    await app.store.game.set_finish_for_player(game_id=game.game_id, player_id=player.player_id)
+    await app.store.game.set_finish_for_player(
+        game_id=game.game_id, player_id=player.player_id
+    )
 
     message_text = f"{player.user.first_name} {player.user.last_name} - пасс"
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
@@ -406,8 +412,9 @@ async def start_game_for_dealer(update: "Update", app: "Application") -> None:
 
         if dealer_cards_sum < player_card_sum <= 21:
             player_status = "обыграл дилера 😎"
-        elif (player_card_sum == dealer_cards_sum and player_card_sum <= 21) or\
-                (player_card_sum > 21 and dealer_cards_sum > 21):
+        elif (
+            player_card_sum == dealer_cards_sum and player_card_sum <= 21
+        ) or (player_card_sum > 21 and dealer_cards_sum > 21):
             player_status = "пуш 😐"
         else:
             player_status = "проиграл дилеру 😭"

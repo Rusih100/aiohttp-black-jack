@@ -19,4 +19,3 @@ class Dispatcher:
             for handler in self._message_handlers:
                 if handler.can_process(update):
                     await handler.handler_func(update, self.app)
-
