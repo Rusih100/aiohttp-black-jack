@@ -1,6 +1,6 @@
 import typing
 
-from app.store.bot.answers import BorAnswers
+from app.store.bot.answers import BotAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
@@ -48,6 +48,6 @@ async def start_command(update: "Update", app: "Application") -> None:
     await app.store.vk_api.send_message(message=message)
 
     message = Message(
-        peer_id=update.object.message.peer_id, text=BorAnswers.BOT_NOT_ADMIN
+        peer_id=update.object.message.peer_id, text=BotAnswers.BOT_NOT_ADMIN
     )
     await app.store.vk_api.send_message(message=message)

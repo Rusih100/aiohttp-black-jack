@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text
+from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text, BigInteger
 from sqlalchemy.orm import relationship
 
-from app.black_jack.game.card import Card
+from app.blackjack.game.card import Card
 from app.store.bot.states import GameStates
 from app.store.database.sqlalchemy_base import db
 
@@ -190,8 +190,8 @@ class PlayerModel(db):
     )
     is_bet_placed = Column(Boolean, nullable=False)
     is_finished = Column(Boolean, nullable=False)
-    cash = Column(Integer)
-    bet = Column(Integer)
+    cash = Column(BigInteger)
+    bet = Column(BigInteger)
     hand = Column(JSON)
 
     game: "GameModel" = relationship("GameModel", back_populates="players")
