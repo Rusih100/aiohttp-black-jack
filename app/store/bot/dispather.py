@@ -1,6 +1,8 @@
 import typing
-from typing import Awaitable, Callable, List
+from logging import Logger
+from typing import List, Optional
 
+from app.store.bot.handler import Handler
 from app.store.vk_api.dataclasses import Update
 
 if typing.TYPE_CHECKING:
@@ -8,50 +10,16 @@ if typing.TYPE_CHECKING:
     from app.web.app import Application
 
 
-class Handler:
-    def __init__(
-        self,
-        handler_func: Callable[["Update", "Application"], Awaitable[None]],
-        commands: List[str] | None = None,
-        buttons_payload: List[str] | None = None,
-        func: Callable[["Update"], bool] | None = None,
-    ):
-        self.handler_func = handler_func
-        self.commands = commands if commands else []
-        self.buttons_payload = buttons_payload if buttons_payload else []
-        self.func = func
-
-    def can_process(self, update: Update) -> bool:
-        raw_command = update.object.message.text
-
-        # Проверка на наличие команды в тексте
-        if self.commands:
-            command = raw_command.strip()
-            if command in self.commands:
-                return True
-
-        raw_payload = update.object.message.payload
-
-        # Проверка на payload
-        if self.buttons_payload and raw_payload is not None:
-            if raw_payload.button in self.buttons_payload:
-                return True
-
-        # Проверка по условию в хэндлере
-        if self.func is not None and self.func(update):
-            return True
-
-        return False
-
-
 class Dispatcher:
-    def __init__(self, app: "Application", router: "Router"):
+    def __init__(self, app: "Application", router: "Router", logger: Optional[Logger] = None):
         self.app = app
         self._message_handlers: List[Handler] = router.handlers
+        self.logger = logger
 
     async def process_updates(self, updates: list[Update]):
         for update in updates:
             for handler in self._message_handlers:
                 if handler.can_process(update):
                     await handler.handler_func(update, self.app)
-                    break
+                    self.logger.info(
+                        f" {handler.handler_func.__name__} function processed update: {update}")

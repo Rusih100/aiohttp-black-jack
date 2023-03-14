@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app.admin.models import db
-from app.black_jack.models import db
+from app.blackjack.models import db
 from app.store.database.sqlalchemy_base import db
 
 target_metadata = db.metadata

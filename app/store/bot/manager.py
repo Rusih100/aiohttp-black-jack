@@ -13,8 +13,11 @@ from app.store.bot.handlers import router
 class BotManager:
     def __init__(self, app: "Application"):
         self.app = app
-        self.logger = getLogger("handler")
-        self.dispather = Dispatcher(app=self.app, router=router)
+        self.dispather = Dispatcher(
+            app=self.app,
+            router=router,
+            logger=getLogger("handler")
+        )
 
     async def handle_updates(self, updates: list[Update]):
         await self.dispather.process_updates(updates=updates)

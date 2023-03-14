@@ -1,12 +1,12 @@
 import random
 import typing
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
 
 from app.base.base_accessor import BaseAccessor
-from app.store.vk_api.dataclasses import Keyboard, Message, Update
+from app.store.vk_api.dataclasses import Keyboard, Message, Profile, Update
 from app.store.vk_api.poller import Poller
 
 if typing.TYPE_CHECKING:
@@ -118,3 +118,51 @@ class VkApiAccessor(BaseAccessor):
         async with self.session.get(query) as response:
             data = await response.json()
             self.logger.info(data)
+
+    async def get_conversation_members(
+        self, message: Message
+    ) -> List["Profile"]:
+        query = self._build_query(
+            host=API_PATH,
+            method="messages.getConversationMembers",
+            params={
+                "peer_id": message.peer_id,
+                "group_id": self.app.config.bot.group_id,
+                "access_token": self.app.config.bot.token,
+            },
+        )
+        async with self.session.get(query) as response:
+            response = await response.json()
+            self.logger.info(response)
+
+            if response.get("error", False):
+                return []
+
+            data = response["response"]
+
+            raw_items = data["items"]
+            raw_profiles = data["profiles"]
+
+            profile_dict: Dict[str, "Profile"] = dict()
+
+            for raw_profile in raw_profiles:
+                _id = raw_profile["id"]
+
+                profile_dict[_id] = Profile(
+                    id=_id,
+                    first_name=raw_profile["first_name"],
+                    last_name=raw_profile["last_name"],
+                )
+
+            for raw_item in raw_items:
+                member_id = raw_item["member_id"]
+
+                profile = profile_dict.get(member_id, None)
+
+                if profile is None:
+                    continue
+
+                profile.is_admin = raw_item.get("is_admin", False)
+                profile_dict[member_id] = profile
+
+        return list(profile_dict.values())

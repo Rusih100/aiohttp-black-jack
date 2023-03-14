@@ -86,12 +86,14 @@ class UpdateMessageAction:
         cls, message: Dict[str, Any]
     ) -> Union["UpdateMessageAction", None]:
         action: Dict[str, Any] = message.get("action", None)
-        if action:
-            return UpdateMessageAction(
-                type=action.get("type", None),
-                member_id=action.get("member_id", None),
-            )
-        return None
+
+        if action is None:
+            return None
+
+        return UpdateMessageAction(
+            type=action.get("type", None),
+            member_id=action.get("member_id", None),
+        )
 
 
 @dataclass
@@ -102,10 +104,12 @@ class Payload:
     @classmethod
     def parse_payload(cls, message: Dict[str, Any]) -> Union["Payload", None]:
         raw_payload = message.get("payload", None)
-        if raw_payload:
-            payload_json = json.loads(raw_payload)
-            return Payload(
-                button=payload_json.get("button", None),
-                command=payload_json.get("command", None),
-            )
-        return None
+
+        if raw_payload is None:
+            return None
+
+        payload_json = json.loads(raw_payload)
+        return Payload(
+            button=payload_json.get("button", None),
+            command=payload_json.get("command", None),
+        )

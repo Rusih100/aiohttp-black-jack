@@ -4,7 +4,7 @@ admin:
   email: admin@admin.com
   password: admin
 database:
-  host: 127.0.0.1
+  host: database
   port: 5432
   user: postgres
   password: dtKLoAJNzWsCewbah20W
