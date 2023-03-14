@@ -441,6 +441,8 @@ async def start_game_for_dealer(update: "Update", app: "Application") -> None:
             player_status = BotAnswers.GAME_END_PUSH
         elif dealer_cards_sum < player_card_sum <= 21:
             player_status = BotAnswers.GAME_END_WON
+        else:
+            player_status = BotAnswers.GAME_END_WON
 
         message_text += (
             f"⭐ {player.user.first_name} {player.user.last_name}: {ServiceSymbols.LINE_BREAK}"
