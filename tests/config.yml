@@ -1,0 +1,14 @@
+session:
+  key: CaY5iCkYtN7DqXdiYK1BvmGrQuaSA4Tl4bEk9my0jc0=
+admin:
+  email: admin@admin.com
+  password: admin
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: postgres
+  password: dtKLoAJNzWsCewbah20W
+  database: test_aiohttp_black_jack
+bot:
+  token: vk1.a.ILtzMbUep9e5psLJIYpALrWgZX4I7dNkC2x6Cmt_-V3ZCkQqtiEiHIONsuxFAhK7AMCQDx1WFoN7O6O0IPfqKLKXCsXtuqYJWGsDoTM9aXvxlnx15vNIaVfZAlw89sdgd480jcBIW4SjiOxSwuAhiCkaloJwwJcF579k7Hn8zaMMa7st-SH8yljDAt-SXBtQ1UtV1-gDzKXtV6tCZfDDBA
+  group_id: 218833701
