@@ -134,6 +134,19 @@ class GameAccessor(BaseAccessor):
 
         return Game.from_sqlalchemy(game)
 
+    async def get_all_games(self) -> List[Game]:
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(GameModel)
+                .options(selectinload(GameModel.state))
+                .options(selectinload(GameModel.players))
+            )
+            games = result.scalars()
+
+        return [Game.from_sqlalchemy(game) for game in games]
+
     async def get_state_by_game_id(self, game_id: int) -> State | None:
         async with self.app.database.session() as session:
             session: AsyncSession
@@ -149,19 +162,6 @@ class GameAccessor(BaseAccessor):
             return None
 
         return State.from_sqlalchemy(state)
-
-    async def get_all_games(self) -> List[Game]:
-        async with self.app.database.session() as session:
-            session: AsyncSession
-
-            result: ChunkedIteratorResult = await session.execute(
-                select(GameModel)
-                .options(selectinload(GameModel.state))
-                .options(selectinload(GameModel.players))
-            )
-            games = result.scalars()
-
-        return [Game.from_sqlalchemy(game) for game in games]
 
     async def update_state_type(
         self, game_id: int, state_type: GameStates
@@ -276,7 +276,7 @@ class GameAccessor(BaseAccessor):
 
         return Player.from_sqlalchemy(player)
 
-    async def set_bet(self, game_id: int, player_id: int, bet: int) -> None:
+    async def set_bet_for_player(self, game_id: int, player_id: int, bet: int) -> None:
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():
@@ -331,3 +331,14 @@ class GameAccessor(BaseAccessor):
                     .where(PlayerModel.player_id == player_id)
                     .values(hand={"cards": [card.to_dict for card in cards]})
                 )
+
+    async def get_all_users(self):
+        async with self.app.database.session() as session:
+            session: AsyncSession
+
+            result: ChunkedIteratorResult = await session.execute(
+                select(UserModel)
+            )
+            users = result.scalars()
+
+        return [User.from_sqlalchemy(user) for user in users]

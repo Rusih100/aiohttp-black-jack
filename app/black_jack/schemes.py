@@ -77,3 +77,11 @@ class GameListSchema(Schema):
 
 class GameListResponseSchema(OkResponseSchema):
     data = fields.Nested(GameListSchema())
+
+
+class UserListSchema(Schema):
+    users = fields.Nested(UserSchema(many=True, only=("user_id", "vk_id", "first_name", "last_name")))
+
+
+class UserListResponseSchema(OkResponseSchema):
+    data = fields.Nested(UserListSchema())

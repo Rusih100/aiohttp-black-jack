@@ -6,6 +6,8 @@ from app.black_jack.schemes import (
     GameGetResponseSchema,
     GameSchema,
     GameListResponseSchema,
+    UserListResponseSchema,
+    UserSchema
 )
 from app.web.app import View
 from app.web.mixins import AuthRequiredMixin
@@ -13,7 +15,6 @@ from app.web.schemes import ErrorResponseSchema
 from app.web.utils import json_response
 
 
-# TODO: авториазция
 class GameInfoView(AuthRequiredMixin, View):
     @docs(
         tags=["Game"],
@@ -55,7 +56,6 @@ class GameInfoView(AuthRequiredMixin, View):
         return json_response(data=GameSchema().dump(raw_game))
 
 
-# Админка
 class GameListView(AuthRequiredMixin, View):
     @docs(
         tags=["Game"],
@@ -82,3 +82,36 @@ class GameListView(AuthRequiredMixin, View):
         games = [GameSchema(only=("game_id", "chat_id")).dump(raw_game) for raw_game in raw_games]
 
         return json_response(data={"games": games})
+
+
+class UserListView(AuthRequiredMixin, View):
+    @docs(
+        tags=["User"],
+        summary="Gets a list of all users",
+        description="Gets a list of all users",
+        responses={
+            200: {  # Успешно
+                "description": "Ok",
+                "schema": UserListResponseSchema,
+            },
+            401: {  # Неавторизован
+                "description": "Error: Unauthorized",
+                "schema": ErrorResponseSchema,
+            },
+            405: {  # Не реализовано
+                "description": "Error: Not implemented",
+                "schema": ErrorResponseSchema,
+            },
+        },
+    )
+    async def get(self):
+        raw_users = await self.store.game.get_all_users()
+
+        users = [
+            UserSchema(only=("user_id", "vk_id", "first_name", "last_name"))
+            .dump(raw_user) for raw_user in raw_users
+        ]
+
+        return json_response(data={"users": users})
+
+

@@ -240,7 +240,7 @@ async def handle_players_bet(update: "Update", app: "Application") -> None:
     if player is None or player.is_bet_placed:
         return
 
-    await app.store.game.set_bet(
+    await app.store.game.set_bet_for_player(
         game_id=game.game_id, player_id=player.player_id, bet=bet
     )
 

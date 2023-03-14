@@ -5,7 +5,8 @@ if typing.TYPE_CHECKING:
 
 
 def setup_routes(app: "Application"):
-    from app.black_jack.views import GameInfoView, GameListView
+    from app.black_jack.views import GameInfoView, GameListView, UserListView
 
     app.router.add_view("/game.get", GameInfoView)
     app.router.add_view("/game.all_current", GameListView)
+    app.router.add_view("/user.all", UserListView)

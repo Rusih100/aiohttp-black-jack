@@ -100,7 +100,7 @@ class User:
     vk_id: int
     first_name: str
     last_name: str
-    is_admin: bool
+    is_admin: bool  # FIXME: Относительно чата может быть разным
 
     @classmethod
     def from_sqlalchemy(cls, model: "UserModel") -> "User":
