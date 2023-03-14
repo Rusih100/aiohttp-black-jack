@@ -78,7 +78,7 @@ class VkApiAccessor(BaseAccessor):
                 "act": "a_check",
                 "key": self.key,
                 "ts": self.ts,
-                "wait": 2,
+                "wait": 1,
             },
         )
         async with self.session.get(query) as response:
@@ -99,7 +99,7 @@ class VkApiAccessor(BaseAccessor):
             if update:
                 updates.append(update)
 
-        await self.app.store.bots_manager.handle_updates(updates=updates)
+        await self.app.store.bots_manager.add_updates_to_queue(updates=updates)
 
     async def send_message(
         self, message: Message, keyboard: Optional[Keyboard] = None
