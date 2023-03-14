@@ -69,3 +69,11 @@ class GameGetResponseSchema(OkResponseSchema):
 
 class GameGetQuerySchema(Schema):
     chat_id = fields.Int(required=True)
+
+
+class GameListSchema(Schema):
+    games = fields.Nested(GameSchema(many=True, only=("game_id", "chat_id")))
+
+
+class GameListResponseSchema(OkResponseSchema):
+    data = fields.Nested(GameListSchema())

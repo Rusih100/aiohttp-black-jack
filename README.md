@@ -24,8 +24,6 @@ Black Jack Бот в ВКонтакте
 ## Документация
 Документация API доступна по роуту ```/docs```   
 
-## Схема шагов игры
-[Ссылка](https://lucid.app/lucidspark/41ef880a-15da-45f2-995d-19ac29df239b/edit?viewport_loc=285%2C44%2C2322%2C1121%2C0_0&invitationId=inv_393d4859-293e-4fb6-af16-ce19cb57046f)
-
 ## Cхема базы данных
+TODO: Обновить схему БД  
 [Ссылка](https://dbdiagram.io/d/63ff4e2b296d97641d84a283)

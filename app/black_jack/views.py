@@ -5,6 +5,7 @@ from app.black_jack.schemes import (
     GameGetQuerySchema,
     GameGetResponseSchema,
     GameSchema,
+    GameListResponseSchema,
 )
 from app.web.app import View
 from app.web.mixins import AuthRequiredMixin
@@ -13,11 +14,11 @@ from app.web.utils import json_response
 
 
 # TODO: авториазция
-class GetGameView(View):
+class GameInfoView(AuthRequiredMixin, View):
     @docs(
         tags=["Game"],
-        summary="Get game",
-        description="Returns all information about the game by chat_id vk",
+        summary="Get game information by chat_id",
+        description="Gets information about the current game by chat_id vk",
         responses={
             200: {  # Успешно
                 "description": "Ok",
@@ -52,3 +53,32 @@ class GetGameView(View):
             raise HTTPNotFound(reason="Game not found")
 
         return json_response(data=GameSchema().dump(raw_game))
+
+
+# Админка
+class GameListView(AuthRequiredMixin, View):
+    @docs(
+        tags=["Game"],
+        summary="Gets a list of running games",
+        description="Gets a list of running games",
+        responses={
+            200: {  # Успешно
+                "description": "Ok",
+                "schema": GameListResponseSchema,
+            },
+            401: {  # Неавторизован
+                "description": "Error: Unauthorized",
+                "schema": ErrorResponseSchema,
+            },
+            405: {  # Не реализовано
+                "description": "Error: Not implemented",
+                "schema": ErrorResponseSchema,
+            },
+        },
+    )
+    async def get(self):
+        raw_games = await self.store.game.get_all_games()
+
+        games = [GameSchema(only=("game_id", "chat_id")).dump(raw_game) for raw_game in raw_games]
+
+        return json_response(data={"games": games})
