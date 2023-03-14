@@ -9,7 +9,6 @@ if typing.TYPE_CHECKING:
 
 
 class WorkAccessor(BaseAccessor):
-
     def __init__(self, app: "Application", *args, **kwargs):
         super().__init__(app, *args, **kwargs)
 

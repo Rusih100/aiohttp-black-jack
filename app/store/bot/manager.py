@@ -15,9 +15,7 @@ class BotManager:
         self.app = app
         self.queue: list[Update] = []
         self.dispather = Dispatcher(
-            app=self.app,
-            router=router,
-            logger=getLogger("handler")
+            app=self.app, router=router, logger=getLogger("handler")
         )
 
     async def handle_updates(self) -> None:

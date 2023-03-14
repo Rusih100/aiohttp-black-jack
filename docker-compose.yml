@@ -4,17 +4,34 @@ services:
 
   database:
     container_name: database
+    hostname: database
     image: "postgres"
     restart: always
     environment:
       POSTGRES_DB: "aiohttp_black_jack"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "dtKLoAJNzWsCewbah20W"
+    volumes:
+      - ./docker/postgres:/var/lib/postgres
     ports:
       - "5432:5432"
 
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    image: "rabbitmq"
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: "rmuser"
+      RABBITMQ_DEFAULT_PASS: "DAs23orG23dvsESWFvda"
+    volumes:
+      - ./docker/rabbitmq:/var/lib/rabbitmq
+    ports:
+     - "15672:15672"
+
   app:
     container_name: app
+    hostname: app
     build: .
     restart: always
     ports:
@@ -22,6 +39,7 @@ services:
     command: bash -c "export PYTHONPATH=. && alembic upgrade head && python main.py"
     depends_on:
       - database
+      - rabbitmq
 
 
 

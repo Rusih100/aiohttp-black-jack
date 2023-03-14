@@ -276,7 +276,9 @@ class GameAccessor(BaseAccessor):
 
         return Player.from_sqlalchemy(player)
 
-    async def set_bet_for_player(self, game_id: int, player_id: int, bet: int) -> None:
+    async def set_bet_for_player(
+        self, game_id: int, player_id: int, bet: int
+    ) -> None:
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():

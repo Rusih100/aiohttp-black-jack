@@ -11,7 +11,12 @@ if typing.TYPE_CHECKING:
 
 
 class Dispatcher:
-    def __init__(self, app: "Application", router: "Router", logger: Optional[Logger] = None):
+    def __init__(
+        self,
+        app: "Application",
+        router: "Router",
+        logger: Optional[Logger] = None,
+    ):
         self.app = app
         self._message_handlers: List[Handler] = router.handlers
         self.logger = logger
@@ -22,4 +27,5 @@ class Dispatcher:
                 if handler.can_process(update):
                     await handler.handler_func(update, self.app)
                     self.logger.info(
-                        f" {handler.handler_func.__name__} function processed update: {update}")
+                        f" {handler.handler_func.__name__} function processed update: {update}"
+                    )
