@@ -1,16 +1,16 @@
 """Init database
 
-Revision ID: 309504515fff
+Revision ID: 141a45cb22ab
 Revises: 
-Create Date: 2023-03-13 17:37:45.338549
+Create Date: 2023-03-14 18:41:54.886292
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '309504515fff'
+revision = '141a45cb22ab'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -51,8 +51,8 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('is_bet_placed', sa.Boolean(), nullable=False),
     sa.Column('is_finished', sa.Boolean(), nullable=False),
-    sa.Column('cash', sa.Integer(), nullable=True),
-    sa.Column('bet', sa.Integer(), nullable=True),
+    sa.Column('cash', sa.BigInteger(), nullable=True),
+    sa.Column('bet', sa.BigInteger(), nullable=True),
     sa.Column('hand', sa.JSON(), nullable=True),
     sa.ForeignKeyConstraint(['game_id'], ['games.game_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),

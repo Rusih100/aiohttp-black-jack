@@ -72,7 +72,7 @@ class GameGetQuerySchema(Schema):
 
 
 class GameListSchema(Schema):
-    games = fields.Nested(GameSchema(many=True, only=("game_id", "chat_id")))
+    games = fields.Nested(GameSchema(many=True, partial=True, only=("game_id", "chat_id")))
 
 
 class GameListResponseSchema(OkResponseSchema):
@@ -80,7 +80,7 @@ class GameListResponseSchema(OkResponseSchema):
 
 
 class UserListSchema(Schema):
-    users = fields.Nested(UserSchema(many=True, only=("user_id", "vk_id", "first_name", "last_name")))
+    users = fields.Nested(UserSchema(many=True, partial=True, only=("user_id", "vk_id", "first_name", "last_name")))
 
 
 class UserListResponseSchema(OkResponseSchema):

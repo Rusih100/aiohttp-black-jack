@@ -1,8 +1,8 @@
 import typing
 
-from app.black_jack.game.card import calculate_sum_cards, get_rand_card
-from app.black_jack.models import Game, Player
-from app.store.bot.answers import BorAnswers
+from app.blackjack.game.card import calculate_sum_cards, get_rand_card
+from app.blackjack.models import Game, Player
+from app.store.bot.answers import BotAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
 from app.store.bot.router import Router
@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
 router = Router()
 
 # TODO: Прокинуть стейт в хэндлер для проверки стейта под капотом
-# TODO: Сделать логи
 
 
 @router.handler(commands=[BotCommands.START_GAME.value.command])
@@ -46,7 +45,7 @@ async def start_game(update: "Update", app: "Application") -> None:
     if not profiles:
         message = Message(
             peer_id=update.object.message.peer_id,
-            text=BorAnswers.BOT_NOT_ADMIN,
+            text=BotAnswers.BOT_NOT_ADMIN,
         )
         await app.store.vk_api.send_message(message=message)
         return
@@ -69,6 +68,8 @@ def _validate_int(update: Update) -> bool:
     except (ValueError, TypeError):
         return False
     if num <= 0:
+        return False
+    elif num > 9223372036854775807:
         return False
     return True
 
@@ -314,6 +315,12 @@ async def handle_game_players_hit(update: "Update", app: "Application") -> None:
     await app.store.vk_api.send_message(message)
 
     if cards_sum >= 21:
+        if cards_sum == 21 and len(player_cards) == 2:
+            message = Message(
+                peer_id=update.object.message.peer_id, text=BotAnswers.BLACKJACK
+            )
+            await app.store.vk_api.send_message(message)
+
         message_text = (
             f"{player.user.first_name} {player.user.last_name} больше не берет"
         )
@@ -400,6 +407,12 @@ async def start_game_for_dealer(update: "Update", app: "Application") -> None:
         )
         await app.store.vk_api.send_message(message)
 
+    if dealer_cards_sum == 21 and len(dealer_cards) == 2:
+        message = Message(
+            peer_id=update.object.message.peer_id, text=BotAnswers.BLACKJACK
+        )
+        await app.store.vk_api.send_message(message)
+
     message_text = f"Сумма карт дилера: {dealer_cards_sum}"
     message = Message(peer_id=update.object.message.peer_id, text=message_text)
     await app.store.vk_api.send_message(message)
@@ -410,14 +423,24 @@ async def start_game_for_dealer(update: "Update", app: "Application") -> None:
     for player in game.players:
         player_card_sum = calculate_sum_cards(player.hand)
 
-        if dealer_cards_sum < player_card_sum <= 21:
-            player_status = "обыграл дилера 😎"
-        elif (
-            player_card_sum == dealer_cards_sum and player_card_sum <= 21
-        ) or (player_card_sum > 21 and dealer_cards_sum > 21):
-            player_status = "пуш 😐"
-        else:
-            player_status = "проиграл дилеру 😭"
+        player_status = ""
+
+        if player_card_sum == 21 and dealer_cards_sum == 21:
+            player_status = BotAnswers.GAME_END_PUSH
+        elif player_card_sum == 21 and len(player.hand) == 2:
+            player_status = BotAnswers.GAME_END_BLACKJACK
+        elif player_card_sum == 21:
+            player_status = BotAnswers.GAME_END_WON
+
+        elif player_card_sum > 21:
+            player_status = BotAnswers.GAME_END_BUST
+
+        elif player_card_sum < dealer_cards_sum <= 21:
+            player_status = BotAnswers.GAME_END_LOST
+        elif player_card_sum == dealer_cards_sum < 21:
+            player_status = BotAnswers.GAME_END_PUSH
+        elif dealer_cards_sum < player_card_sum <= 21:
+            player_status = BotAnswers.GAME_END_WON
 
         message_text += (
             f"⭐ {player.user.first_name} {player.user.last_name}: {ServiceSymbols.LINE_BREAK}"

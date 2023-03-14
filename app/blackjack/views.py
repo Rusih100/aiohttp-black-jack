@@ -1,7 +1,7 @@
 from aiohttp.web_exceptions import HTTPNotFound
 from aiohttp_apispec import docs, querystring_schema
 
-from app.black_jack.schemes import (
+from app.blackjack.schemes import (
     GameGetQuerySchema,
     GameGetResponseSchema,
     GameSchema,

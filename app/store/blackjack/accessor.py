@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.base.base_accessor import BaseAccessor
-from app.black_jack.game.card import Card
-from app.black_jack.models import (
+from app.blackjack.game.card import Card
+from app.blackjack.models import (
     Chat,
     ChatModel,
     Game,
