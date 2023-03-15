@@ -1,8 +1,14 @@
-from typing import TYPE_CHECKING, Optional
 import asyncio
+from typing import TYPE_CHECKING, Optional
 
 import aiormq
-from aio_pika import connect_robust, RobustConnection, RobustChannel, RobustQueue, Message
+from aio_pika import (
+    Message,
+    RobustChannel,
+    RobustConnection,
+    RobustQueue,
+    connect_robust,
+)
 
 if TYPE_CHECKING:
     from app.web.app import Application
@@ -43,8 +49,6 @@ class RabbitMQ:
 
     async def publish_message(self, message: str) -> None:
         await self.channel.default_exchange.publish(
-            message=Message(
-                body=message.encode("utf-8")
-            ),
-            routing_key=self.queue_name
+            message=Message(body=message.encode("utf-8")),
+            routing_key=self.queue_name,
         )

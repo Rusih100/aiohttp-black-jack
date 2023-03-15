@@ -101,10 +101,7 @@ class VkApiAccessor(BaseAccessor):
         raw_updates = await self._get_raw_updates()
 
         for raw_update in raw_updates:
-
-            await self.app.rabbitmq.publish_message(
-                json.dumps(raw_update)
-            )
+            await self.app.rabbitmq.publish_message(json.dumps(raw_update))
             self.logger.info(f"Publish message to RabbitMQ: {raw_update}")
 
     async def send_message(

@@ -1,9 +1,9 @@
+import json
 import typing
 from logging import getLogger
 from typing import Optional
-import json
 
-from aio_pika import RobustChannel, RobustQueue, IncomingMessage
+from aio_pika import IncomingMessage, RobustChannel, RobustQueue
 
 from app.base.base_accessor import BaseAccessor
 from app.base.dataclasses.vk import Update
