@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.base.base_accessor import BaseAccessor
+from app.base.dataclasses.vk import Profile
 from app.blackjack.game.card import Card
 from app.blackjack.models import (
     Chat,
@@ -22,7 +23,6 @@ from app.blackjack.models import (
     UserModel,
 )
 from app.store.bot.states import GameStates
-from app.base.dataclasses.vk import Profile
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

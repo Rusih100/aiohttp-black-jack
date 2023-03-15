@@ -39,6 +39,7 @@ class RabbitMQConfig:
     port: int = 15672
     user: str = "guest"
     password: str = "guest"
+    queue: str = ""
 
 
 @dataclass
@@ -67,5 +68,5 @@ def setup_config(app: "Application", config_path: str):
             group_id=raw_config["bot"]["group_id"],
         ),
         database=DatabaseConfig(**raw_config["database"]),
-        rabbitmq=RabbitMQConfig(**raw_config["rabbitmq"])
+        rabbitmq=RabbitMQConfig(**raw_config["rabbitmq"]),
     )

@@ -1,8 +1,8 @@
 import typing
 
-from app.store.bot.commands import BotCommands
-from app.base.router import Router
 from app.base.dataclasses.vk import Message, Update
+from app.base.router import Router
+from app.store.bot.commands import BotCommands
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

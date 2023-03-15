@@ -1,6 +1,7 @@
 import typing
 
 from app.store.database.database import Database
+from app.store.rabbitmq.rabbitmq import RabbitMQ
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -9,9 +10,9 @@ if typing.TYPE_CHECKING:
 class Store:
     def __init__(self, app: "Application"):
         from app.store.admin.accessor import AdminAccessor
-        from app.store.game.accessor import GameAccessor
         from app.store.bot.accessor import WorkAccessor
         from app.store.bot.manager import BotManager
+        from app.store.game.accessor import GameAccessor
         from app.store.vk_api.accessor import VkApiAccessor
 
         self.admins = AdminAccessor(app)
@@ -23,6 +24,9 @@ class Store:
 
 def setup_store(app: "Application"):
     app.database = Database(app)
+    app.rabbitmq = RabbitMQ(app)
     app.on_startup.append(app.database.connect)
     app.on_cleanup.append(app.database.disconnect)
+    app.on_startup.append(app.rabbitmq.connect)
+    app.on_cleanup.append(app.rabbitmq.disconnect)
     app.store = Store(app)
