@@ -22,7 +22,7 @@ from app.blackjack.models import (
     UserModel,
 )
 from app.store.bot.states import GameStates
-from app.store.vk_api.dataclasses import Profile
+from app.base.dataclasses.vk import Profile
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

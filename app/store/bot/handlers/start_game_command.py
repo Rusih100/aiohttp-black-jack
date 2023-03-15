@@ -5,9 +5,9 @@ from app.blackjack.models import Game, Player
 from app.store.bot.answers import BotAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
-from app.store.bot.router import Router
+from app.base.router import Router
 from app.store.bot.states import GameStates
-from app.store.vk_api.dataclasses import Button, Keyboard, Message, Update
+from app.base.dataclasses.vk import Button, Keyboard, Message, Update
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

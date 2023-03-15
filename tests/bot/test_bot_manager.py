@@ -1,4 +1,4 @@
-from app.store.vk_api.dataclasses import (
+from app.base.dataclasses import (
     Message,
     ObjectMessageNew,
     Update,

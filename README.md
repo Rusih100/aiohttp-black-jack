@@ -2,12 +2,14 @@
 Black Jack Бот в ВКонтакте
 
 ## Стек
-- Python
+- Python 3.11
   - AIOHTTP
   - SQLAlchemy
   - Marshmallow
   - Pytest
 - PostgreSQL
+- Docker + Docker Compose
+- RabbitMQ
 
 ## Как начать игру?
 1. Перейдите в группу [Black Jack Bot](https://vk.com/club218833701)

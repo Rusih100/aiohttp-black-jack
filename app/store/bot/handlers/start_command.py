@@ -3,8 +3,8 @@ import typing
 from app.store.bot.answers import BotAnswers
 from app.store.bot.commands import BotCommands
 from app.store.bot.handlers.utils import ServiceSymbols
-from app.store.bot.router import Router
-from app.store.vk_api.dataclasses import Message, Update
+from app.base.router import Router
+from app.base.dataclasses.vk import Message, Update
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

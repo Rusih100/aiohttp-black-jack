@@ -4,7 +4,7 @@ from app.store.bot.handlers import (
     start_game_command,
     stop_game_command,
 )
-from app.store.bot.router import Router
+from app.base.router import Router
 
 router = Router(
     help_command.router,

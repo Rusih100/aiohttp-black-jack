@@ -6,7 +6,7 @@ from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
 
 from app.base.base_accessor import BaseAccessor
-from app.store.vk_api.dataclasses import Keyboard, Message, Profile, Update
+from app.base.dataclasses.vk import Keyboard, Message, Profile, Update
 from app.store.vk_api.poller import Poller
 
 if typing.TYPE_CHECKING:

@@ -2,11 +2,11 @@ import typing
 from logging import Logger
 from typing import List, Optional
 
-from app.store.bot.handler import Handler
-from app.store.vk_api.dataclasses import Update
+from app.base.handler import Handler
+from app.base.dataclasses.vk import Update
 
 if typing.TYPE_CHECKING:
-    from app.store.bot.router import Router
+    from app.base.router import Router
     from app.web.app import Application
 
 

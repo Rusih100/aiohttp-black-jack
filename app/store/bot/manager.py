@@ -1,8 +1,8 @@
 import typing
 from logging import getLogger
 
-from app.store.bot.dispather import Dispatcher
-from app.store.vk_api.dataclasses import Update
+from app.base.dispather import Dispatcher
+from app.base.dataclasses.vk import Update
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
