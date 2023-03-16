@@ -2,12 +2,15 @@
 Black Jack Бот в ВКонтакте
 
 ## Стек
-- Python
+- Python 3.11
   - AIOHTTP
   - SQLAlchemy
   - Marshmallow
+  - Alembic
   - Pytest
 - PostgreSQL
+- Docker + Docker Compose
+- RabbitMQ
 
 ## Как начать игру?
 1. Перейдите в группу [Black Jack Bot](https://vk.com/club218833701)
@@ -18,12 +21,11 @@ Black Jack Бот в ВКонтакте
 ## Команды бота
 ```/start``` - Запускает бота и отправляет приветствие.   
 ```/help``` - Выдает список всех команд бота.   
-```/start_game``` - Запускает игровую сессию.   
-```/stop_game``` - Останавливает игровую сесиию.   
+```/start_game``` - Запускает игру.   
+```/stop_game``` - Останавливает игру.   
 
 ## Документация
 Документация API доступна по роуту ```/docs```   
 
 ## Cхема базы данных
-TODO: Обновить схему БД  
 [Ссылка](https://dbdiagram.io/d/63ff4e2b296d97641d84a283)

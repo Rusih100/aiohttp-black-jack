@@ -9,6 +9,12 @@ database:
   user: postgres
   password: dtKLoAJNzWsCewbah20W
   database: aiohttp_black_jack
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: rmuser
+  password: DAs23orG23dvsESWFvda
+  queue: vk_updates
 bot:
   token: vk1.a.0DxKUGROvUzA6kr0twM88cAlCc517RE2mWTsrnCRCSsVoWxy31VyoiXIo7zat2LkSePNOH4zgcCfXiUXDppopBi4_GO0RVGKKupBVoBhZuvVddfL33XtUZEMLtiwycPAmSYeUe7VqtVwEzQiSXYrOYOTJKUf-5ZA0eszz6hSPRCHEg6so9MtqLrJFwQT9ObBRoOUHfmwHQmWTXmUBJZq7Q
   group_id: 218833701

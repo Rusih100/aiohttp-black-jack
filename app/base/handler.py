@@ -1,7 +1,7 @@
 import typing
 from typing import Awaitable, Callable, List
 
-from app.store.vk_api.dataclasses import Update
+from app.base.dataclasses.vk import Update
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application

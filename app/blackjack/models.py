@@ -1,7 +1,16 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from sqlalchemy import JSON, Boolean, Column, Enum, ForeignKey, Integer, Text, BigInteger
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from app.blackjack.game.card import Card
