@@ -36,7 +36,7 @@ class Database:
         )
 
         self._engine = create_async_engine(
-            connection_url, echo=True, future=True
+            connection_url, echo=False, future=True
         )
 
         self.session = sessionmaker(

@@ -4,10 +4,10 @@ from aiohttp_apispec import docs, querystring_schema
 from app.blackjack.schemes import (
     GameGetQuerySchema,
     GameGetResponseSchema,
-    GameSchema,
     GameListResponseSchema,
+    GameSchema,
     UserListResponseSchema,
-    UserSchema
+    UserSchema,
 )
 from app.web.app import View
 from app.web.mixins import AuthRequiredMixin
@@ -79,7 +79,10 @@ class GameListView(AuthRequiredMixin, View):
     async def get(self):
         raw_games = await self.store.game.get_all_games()
 
-        games = [GameSchema(only=("game_id", "chat_id")).dump(raw_game) for raw_game in raw_games]
+        games = [
+            GameSchema(only=("game_id", "chat_id")).dump(raw_game)
+            for raw_game in raw_games
+        ]
 
         return json_response(data={"games": games})
 
@@ -108,10 +111,10 @@ class UserListView(AuthRequiredMixin, View):
         raw_users = await self.store.game.get_all_users()
 
         users = [
-            UserSchema(only=("user_id", "vk_id", "first_name", "last_name"))
-            .dump(raw_user) for raw_user in raw_users
+            UserSchema(
+                only=("user_id", "vk_id", "first_name", "last_name")
+            ).dump(raw_user)
+            for raw_user in raw_users
         ]
 
         return json_response(data={"users": users})
-
-

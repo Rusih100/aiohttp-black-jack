@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.base.base_accessor import BaseAccessor
+from app.base.dataclasses.vk import Profile
 from app.blackjack.game.card import Card
 from app.blackjack.models import (
     Chat,
@@ -22,7 +23,6 @@ from app.blackjack.models import (
     UserModel,
 )
 from app.store.bot.states import GameStates
-from app.store.vk_api.dataclasses import Profile
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
@@ -276,7 +276,9 @@ class GameAccessor(BaseAccessor):
 
         return Player.from_sqlalchemy(player)
 
-    async def set_bet_for_player(self, game_id: int, player_id: int, bet: int) -> None:
+    async def set_bet_for_player(
+        self, game_id: int, player_id: int, bet: int
+    ) -> None:
         async with self.app.database.session() as session:
             session: AsyncSession
             async with session.begin():

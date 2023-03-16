@@ -1,10 +1,10 @@
 import typing
 from typing import Awaitable, Callable, List
 
-from app.store.bot.dispather import Handler
+from app.base.dispather import Handler
 
 if typing.TYPE_CHECKING:
-    from app.store.vk_api.dataclasses import Update
+    from app.base.dataclasses.vk import Update
     from app.web.app import Application
 
 

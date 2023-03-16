@@ -1,12 +1,15 @@
+import json
 import random
 import typing
+from logging import getLogger
 from typing import Any, Dict, List, Optional
 
 from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
+from pika.channel import Channel
 
 from app.base.base_accessor import BaseAccessor
-from app.store.vk_api.dataclasses import Keyboard, Message, Profile, Update
+from app.base.dataclasses.vk import Keyboard, Message, Profile
 from app.store.vk_api.poller import Poller
 
 if typing.TYPE_CHECKING:
@@ -18,6 +21,7 @@ API_PATH = "https://api.vk.com/method/"
 class VkApiAccessor(BaseAccessor):
     def __init__(self, app: "Application", *args, **kwargs):
         super().__init__(app, *args, **kwargs)
+        self.logger = getLogger("poller")
 
         self.key: Optional[str] = None
         self.ts: Optional[int] = None
@@ -26,7 +30,10 @@ class VkApiAccessor(BaseAccessor):
         self.session: Optional[ClientSession] = None
         self.poller: Optional[Poller] = None
 
+        self.channel: Optional[Channel] = None
+
     async def connect(self, app: "Application"):
+        self.channel = app.rabbitmq.channel
         self.session = ClientSession(connector=TCPConnector(verify_ssl=False))
 
         try:
@@ -78,7 +85,7 @@ class VkApiAccessor(BaseAccessor):
                 "act": "a_check",
                 "key": self.key,
                 "ts": self.ts,
-                "wait": 2,
+                "wait": 1,
             },
         )
         async with self.session.get(query) as response:
@@ -92,14 +99,10 @@ class VkApiAccessor(BaseAccessor):
 
     async def poll(self):
         raw_updates = await self._get_raw_updates()
-        updates = []
 
         for raw_update in raw_updates:
-            update = Update.parse_update(raw_update)
-            if update:
-                updates.append(update)
-
-        await self.app.store.bots_manager.handle_updates(updates=updates)
+            await self.app.rabbitmq.publish_message(json.dumps(raw_update))
+            self.logger.info(f"Publish message to RabbitMQ: {raw_update}")
 
     async def send_message(
         self, message: Message, keyboard: Optional[Keyboard] = None
