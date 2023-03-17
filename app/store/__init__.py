@@ -9,7 +9,6 @@ if typing.TYPE_CHECKING:
 
 class Store:
     def __init__(self, app: "Application", service: str):
-
         match service:
             case "admin-api":
                 from app.store.admin.accessor import AdminAccessor
@@ -36,7 +35,6 @@ class Store:
 
 
 def setup_store(app: "Application", service: str) -> None:
-
     match service:
         case "admin-api":
             app.database = Database(app)

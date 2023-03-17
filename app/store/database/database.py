@@ -53,7 +53,9 @@ class Database:
         try:
             await self._ping()
         except ConnectionRefusedError:
-            self.logger.error("Database connection error. We will try again in 5 seconds")
+            self.logger.error(
+                "Database connection error. We will try again in 5 seconds"
+            )
             await asyncio.sleep(5)
             await self.connect(*_, **__)
 

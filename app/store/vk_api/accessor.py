@@ -19,7 +19,9 @@ API_PATH = "https://api.vk.com/method/"
 
 
 class VkApiAccessor(BaseAccessor):
-    def __init__(self, app: "Application", is_poller: bool = False, *args, **kwargs):
+    def __init__(
+        self, app: "Application", is_poller: bool = False, *args, **kwargs
+    ):
         super().__init__(app, *args, **kwargs)
         self.logger = getLogger("poller")
 
