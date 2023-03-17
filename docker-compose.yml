@@ -29,17 +29,38 @@ services:
     ports:
      - "15672:15672"
 
-  app:
-    container_name: app
-    hostname: app
+  admin-api:
+    container_name: admin-api
+    hostname: admin-api
     build: .
     restart: always
     ports:
       - "8080:8080"
-    command: bash -c "export PYTHONPATH=. && alembic upgrade head && python main.py"
+    command: bash -c "export PYTHONPATH=. && alembic upgrade head && python main.py -s admin-api"
     depends_on:
       - database
+
+  vk-poller:
+    container_name: vk-poller
+    hostname: vk-poller
+    build: .
+    restart: always
+    ports:
+      - "8081:8081"
+    command: bash -c "python main.py -s vk-poller"
+    depends_on:
+      - admin-api
       - rabbitmq
 
-
-
+  vk-worker:
+    container_name: vk-worker
+    hostname: vk-worker
+    build: .
+    restart: always
+    ports:
+      - "8082:8082"
+    command: bash -c "python main.py -s vk-worker"
+    depends_on:
+      - database
+      - admin-api
+      - rabbitmq
