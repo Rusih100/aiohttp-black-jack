@@ -57,7 +57,9 @@ async def error_handling_middleware(request: "Request", handler):
         )
 
 
-def setup_middlewares(app: "Application"):
-    app.middlewares.append(auth_middleware)
-    app.middlewares.append(error_handling_middleware)
-    app.middlewares.append(validation_middleware)
+def setup_middlewares(app: "Application", service: str) -> None:
+    match service:
+        case "admin-api":
+            app.middlewares.append(auth_middleware)
+            app.middlewares.append(validation_middleware)
+            app.middlewares.append(error_handling_middleware)

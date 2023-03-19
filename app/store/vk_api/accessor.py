@@ -19,9 +19,13 @@ API_PATH = "https://api.vk.com/method/"
 
 
 class VkApiAccessor(BaseAccessor):
-    def __init__(self, app: "Application", *args, **kwargs):
+    def __init__(
+        self, app: "Application", is_poller: bool = False, *args, **kwargs
+    ):
         super().__init__(app, *args, **kwargs)
         self.logger = getLogger("poller")
+
+        self.is_poller = is_poller
 
         self.key: Optional[str] = None
         self.ts: Optional[int] = None
@@ -36,14 +40,15 @@ class VkApiAccessor(BaseAccessor):
         self.channel = app.rabbitmq.channel
         self.session = ClientSession(connector=TCPConnector(verify_ssl=False))
 
-        try:
-            await self._get_long_poll_service()
-        except Exception as e:
-            self.logger.error("Exception", exc_info=e)
+        if self.is_poller:
+            try:
+                await self._get_long_poll_service()
+            except Exception as e:
+                self.logger.error("Exception", exc_info=e)
 
-        self.poller = Poller(app.store)
-        self.logger.info("start polling")
-        await self.poller.start()
+            self.poller = Poller(app.store)
+            self.logger.info("start polling")
+            await self.poller.start()
 
     async def disconnect(self, app: "Application"):
         if self.poller:
