@@ -52,12 +52,7 @@ class View(AiohttpView):
         return self.request.get("data", {})
 
 
-app = Application()
-
-
-def setup_app(config_path: str) -> Application:
-    setup_logging(app=app)
-    setup_config(app=app, config_path=config_path)
+def setup_admin_api(app: Application) -> None:
     session_setup(
         app=app, storage=EncryptedCookieStorage(app.config.session.key)
     )
@@ -69,6 +64,18 @@ def setup_app(config_path: str) -> Application:
         url="/docs/json",
         swagger_path="/docs",
     )
-    setup_middlewares(app=app)
-    setup_store(app=app)
+
+
+def setup_app(config_path: str, service: str) -> Application:
+    app = Application()
+
+    setup_logging(app=app)
+    setup_config(app=app, config_path=config_path)
+
+    match service:
+        case "admin-api":
+            setup_admin_api(app=app)
+
+    setup_middlewares(app=app, service=service)
+    setup_store(app=app, service=service)
     return app
