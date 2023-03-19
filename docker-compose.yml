@@ -5,7 +5,7 @@ services:
   database:
     container_name: database
     hostname: database
-    image: "postgres"
+    image: "postgres:alpine"
     restart: always
     environment:
       POSTGRES_DB: "aiohttp_black_jack"
@@ -24,7 +24,7 @@ services:
   rabbitmq:
     container_name: rabbitmq
     hostname: rabbitmq
-    image: "rabbitmq"
+    image: "rabbitmq:alpine"
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: "rmuser"
