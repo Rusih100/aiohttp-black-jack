@@ -29,7 +29,7 @@ jobs:
           context: .
           file: docker-compose.yml
           push: true
-          tags: ghcr.io/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:${{ github.ref_name }}
+          tags: ghcr.io/${{ github.actor }}/${{ github.repository }}:${{ github.ref_name }}
           secrets: |
             "github_token=${{ secrets.REGISTRY_TOKEN }}"
           
