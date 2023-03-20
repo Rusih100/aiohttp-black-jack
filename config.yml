@@ -1,8 +1,8 @@
 session:
   key: CaY5iCkYtN7DqXdiYK1BvmGrQuaSA4Tl4bEk9my0jc0=
 admin:
-  email: admin@admin.com
-  password: admin
+  email: root@root.com
+  password: AnWurWJhW0BER70FeOJX3mayXbtIyIQVbf9w8CzBhbGYqBToG8VABxvMnjiMwpb6
 database:
   host: database
   port: 5432
