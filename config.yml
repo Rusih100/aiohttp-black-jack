@@ -1,20 +1,20 @@
 session:
-  key: CaY5iCkYtN7DqXdiYK1BvmGrQuaSA4Tl4bEk9my0jc0=
+  key: <your_key>
 admin:
-  email: root@root.com
-  password: AnWurWJhW0BER70FeOJX3mayXbtIyIQVbf9w8CzBhbGYqBToG8VABxvMnjiMwpb6
+  email: <your_email>
+  password: <your_password>
 database:
   host: database
   port: 5432
-  user: postgres
-  password: dtKLoAJNzWsCewbah20W
-  database: aiohttp_black_jack
+  user: <your_username>
+  password: <your_password>
+  database: <your_database_name>
 rabbitmq:
   host: rabbitmq
   port: 5672
-  user: rmuser
-  password: DAs23orG23dvsESWFvda
+  user: <your_username>
+  password: <your_password>
   queue: vk_updates
 bot:
-  token: vk1.a.O6yYsUun9bUQScVqfK6lWSz7BYmXbYzNLhBMKnXu7yPk8Lj4oWXrzT984bMVSX_8Re3xeFED4uMCgQ9uOKVnew89sfnKVS-TkVr7ZJDNSNPdgCzbngShuzSMMyq_fbmxFknZhvObNaQTsT9X_kparDbHF8IJbpJFj4fQ_78tLCEq8wEA_Upj-DDJfB1KWoLzlAjpQypW3P9eU5tP7ZLuhw
-  group_id: 218833701
+  token: <your_token>
+  group_id: <your_group_id>
